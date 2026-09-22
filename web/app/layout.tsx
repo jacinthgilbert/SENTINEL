@@ -7,10 +7,10 @@ export const metadata: Metadata = {
   title: "The Sentinel",
   description: "Flood early-warning and response · Visakhapatnam",
   manifest: "/manifest.json",
-  icons: { icon: "/icon.svg" },
+  icons: { icon: "/icon-512.png", apple: "/icon-512.png" },
 };
 
-export const viewport: Viewport = { themeColor: "#14110D" };
+export const viewport: Viewport = { themeColor: "#1B2C1A" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

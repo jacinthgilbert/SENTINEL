@@ -86,7 +86,10 @@ export default function Sidebar({
   return (
     <aside className="sidebar">
       <div className="brand">
-        <span className="brand-mark">▲</span>
+        <span className="brand-mark">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/sentinel-mark.png" alt="" />
+        </span>
         <span className="brand-text">
           <div className="brand-name">SENTINEL</div>
           <div className="brand-sub">Visakhapatnam</div>

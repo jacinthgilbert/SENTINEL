@@ -14,7 +14,7 @@ export default function Splash() {
       /* private mode — show it, harmless */
     }
     setShow(true);
-    const t = setTimeout(() => setShow(false), 2600);
+    const t = setTimeout(() => setShow(false), 2900);
     return () => clearTimeout(t);
   }, []);
 
@@ -22,7 +22,8 @@ export default function Splash() {
   return (
     <div className="splash" aria-hidden>
       <div className="splash-inner">
-        <h1>SENTINEL</h1>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="splash-banner" src="/sentinel-banner.jpg" alt="Sentinel" />
         <div className="splash-rule" />
         <p>Flood early warning · Visakhapatnam</p>
       </div>

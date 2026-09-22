@@ -8,41 +8,41 @@
    ═══════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ground */
-  --bg:        #14110D;
-  --bg-2:      #1B1712;
-  --panel:     #211C16;
-  --panel-2:   #2A231B;
-  --line:      #372E24;
-  --line-soft: #2B241C;
+  /* ground — sampled from the brand banner */
+  --bg:        #131E12;
+  --bg-2:      #1B2C1A;
+  --panel:     #1F3120;
+  --panel-2:   #273C26;
+  --line:      #35492F;
+  --line-soft: #2A3D27;
 
   /* ink */
-  --text:      #EFE6D8;
-  --text-dim:  #C9BCA9;
-  --muted:     #9A8A76;
+  --text:      #EFE6D0;
+  --text-dim:  #C3AC7E;
+  --muted:     #8B9A80;
 
   /* accents */
-  --accent:    #C9803F;   /* terracotta */
-  --accent-2:  #8FA07A;   /* sage */
-  --clay:      #A65A3A;
-  --ochre:     #D9A441;
+  --accent:    #C39A4D;   /* brand gold */
+  --accent-2:  #7E9160;   /* sage */
+  --clay:      #A6653C;   /* rust wave */
+  --ochre:     #D4A855;
 
   /* status */
-  --live:      #7E9B5F;
-  --stale:     #D9A441;
-  --offline:   #6E6155;
-  --danger:    #B3462F;
+  --live:      #7E9160;
+  --stale:     #D4A855;
+  --offline:   #5F6B57;
+  --danger:    #A6472C;
 
-  /* risk ramp — pale sand to deep rust, lightness-monotonic */
-  --r1: #EADFC8;
-  --r2: #DCC084;
-  --r3: #C89A4E;
-  --r4: #A65A3A;
-  --r5: #6E2A1E;
+  /* risk ramp — cream to deep rust over forest, lightness-monotonic */
+  --r1: #D8CDA8;
+  --r2: #C39A4D;
+  --r3: #A6653C;
+  --r4: #7E3B24;
+  --r5: #4E2018;
 
   /* water — deliberately cool, never part of the ramp */
-  --water:      #3E5C6B;
-  --water-line: #7FA3B3;
+  --water:      #38596B;
+  --water-line: #7CA6BA;
 
   --radius: 12px;
   --radius-sm: 8px;
@@ -70,29 +70,33 @@ code {
 .splash {
   position: fixed; inset: 0; z-index: 9999;
   display: grid; place-items: center;
-  background:
-    radial-gradient(120% 80% at 50% 40%, #241D16 0%, #14110D 62%, #0E0B08 100%);
-  animation: splash-out .7s var(--ease) 1.9s forwards;
+  background: radial-gradient(90% 70% at 50% 47%, #22371F 0%, #1B2C1A 46%, #121D11 100%);
+  animation: splash-out .75s var(--ease) 2.2s forwards;
 }
-.splash-inner { text-align: center; animation: splash-in 1s var(--ease) both; }
-.splash h1 {
-  margin: 0; font-size: clamp(38px, 9vw, 92px); font-weight: 700;
-  letter-spacing: .34em; text-indent: .34em;
-  background: linear-gradient(180deg, #F3E7D3 0%, var(--ochre) 55%, var(--clay) 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+.splash-inner { text-align: center; animation: splash-in 1.1s var(--ease) both; }
+.splash-banner {
+  width: min(680px, 86vw); height: auto; display: block;
+  /* The artwork carries its own green field. Screen-blending lightened it and
+     left a visible rectangle, so instead the backdrop matches the banner's
+     green exactly and a radial mask dissolves the edges into it. */
+  -webkit-mask-image: radial-gradient(ellipse 62% 58% at 50% 50%,
+                      #000 58%, rgba(0,0,0,.55) 78%, transparent 100%);
+          mask-image: radial-gradient(ellipse 62% 58% at 50% 50%,
+                      #000 58%, rgba(0,0,0,.55) 78%, transparent 100%);
+  filter: saturate(1.06) contrast(1.03);
 }
 .splash p {
-  margin: 14px 0 0; color: var(--muted); font-size: 13px;
+  margin: 6px 0 0; color: #9FB093; font-size: 12.5px;
   letter-spacing: .22em; text-transform: uppercase;
   animation: splash-in 1s var(--ease) .35s both;
 }
 .splash-rule {
-  width: 0; height: 1px; margin: 26px auto 0;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  animation: rule 1.3s var(--ease) .5s forwards;
+  width: 0; height: 1px; margin: 18px auto 14px;
+  background: linear-gradient(90deg, transparent, #C39A4D, transparent);
+  animation: rule 1.4s var(--ease) .6s forwards;
 }
 @keyframes splash-in { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
-@keyframes rule { to { width: 260px } }
+@keyframes rule { to { width: 300px } }
 @keyframes splash-out { to { opacity: 0; visibility: hidden } }
 @media (prefers-reduced-motion: reduce) {
   .splash, .splash-inner, .splash p, .splash-rule { animation-duration: .01ms !important; }
@@ -118,10 +122,11 @@ code {
   white-space: nowrap;
 }
 .brand-mark {
-  width: 28px; height: 28px; flex: 0 0 28px; border-radius: 7px;
-  background: linear-gradient(145deg, var(--ochre), var(--clay));
-  display: grid; place-items: center; font-size: 15px;
+  width: 30px; height: 30px; flex: 0 0 30px; border-radius: 8px;
+  background: #1B2C1A; border: 1px solid var(--line);
+  display: grid; place-items: center; overflow: hidden;
 }
+.brand-mark img { width: 22px; height: auto; display: block; }
 .brand-name { font-weight: 650; letter-spacing: .13em; font-size: 14px; }
 .brand-sub { font-size: 10.5px; color: var(--muted); letter-spacing: .08em; }
 .shell.collapsed .brand-text { opacity: 0; pointer-events: none; }
@@ -455,46 +460,42 @@ h1 { font-size: 23px; letter-spacing: -.01em; margin: 0 0 4px; font-weight: 650;
    Projectors in bright rooms wash out dark interfaces badly, which is a real
    risk for a daytime demo you do not control. Same warm family, inverted. */
 :root[data-theme="light"] {
-  --bg:        #F4EDE0;
-  --bg-2:      #EFE6D6;
-  --panel:     #FBF6EC;
-  --panel-2:   #F2E9D9;
-  --line:      #DCCFB8;
-  --line-soft: #E9DEC9;
+  --bg:        #F1EEE0;
+  --bg-2:      #EAE7D6;
+  --panel:     #F9F7EC;
+  --panel-2:   #EFEBDA;
+  --line:      #D6D2BC;
+  --line-soft: #E4E0CC;
 
-  --text:      #2C2318;
-  --text-dim:  #4A3E2E;
-  --muted:     #7B6C57;
+  --text:      #1B2C1A;          /* forest ink */
+  --text-dim:  #3A4C36;
+  --muted:     #6E7A66;
 
-  --accent:    #A85C26;
-  --accent-2:  #64754E;
-  --clay:      #93482C;
-  --ochre:     #A9781F;
+  --accent:    #8A6522;
+  --accent-2:  #56693F;
+  --clay:      #8A4E2B;
+  --ochre:     #9A7320;
 
-  --live:      #55703B;
-  --stale:     #A9781F;
-  --offline:   #A2937E;
-  --danger:    #93301D;
+  --live:      #4E6438;
+  --stale:     #9A7320;
+  --offline:   #9AA292;
+  --danger:    #8A3A22;
 
-  /* ramp darkened so the pale end still reads on parchment */
-  --r1: #E0CEA6;
-  --r2: #CBA75F;
-  --r3: #B07F34;
-  --r4: #93482C;
-  --r5: #5E2317;
+  /* darkened so the pale end still reads on parchment */
+  --r1: #DCD0A6;
+  --r2: #B9913F;
+  --r3: #96552E;
+  --r4: #70351F;
+  --r5: #442016;
 
-  --water:      #3A6076;
-  --water-line: #29485A;
+  --water:      #35596D;
+  --water-line: #24455A;
 }
 :root[data-theme="light"] .splash {
-  background: radial-gradient(120% 80% at 50% 40%, #FDF8EE 0%, #F1E7D6 62%, #E6D9C2 100%);
-}
-:root[data-theme="light"] .splash h1 {
-  background: linear-gradient(180deg, #7A5A2A 0%, var(--ochre) 45%, var(--clay) 100%);
-  -webkit-background-clip: text; background-clip: text;
+  background: radial-gradient(120% 80% at 50% 45%, #22361F 0%, #1B2C1A 55%, #101A10 100%);
 }
 :root[data-theme="light"] .sidebar {
-  background: linear-gradient(180deg, #EFE6D6 0%, #E9DECB 100%);
+  background: linear-gradient(180deg, #EAE7D6 0%, #E2DFCC 100%);
 }
 :root[data-theme="light"] .brand-mark { color: #FFF6E8; }
 :root[data-theme="light"] .seg button.on { color: #FFF6E8; }

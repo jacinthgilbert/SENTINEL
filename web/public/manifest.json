@@ -1,12 +1,23 @@
 {
-  "name": "The Sentinel — Flood Early Warning",
+  "name": "The Sentinel \u2014 Flood Early Warning",
   "short_name": "Sentinel",
   "description": "Flood early-warning and response for Visakhapatnam",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b0f14",
-  "theme_color": "#0b0f14",
+  "background_color": "#1B2C1A",
+  "theme_color": "#1B2C1A",
   "icons": [
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
   ]
 }
