@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Android SMS gateway: is the phone reachable, and can it send?
 #   ./scripts/phone-test.sh                 -> reachability only
-#   ./scripts/phone-test.sh +919182813006   -> send a real test SMS
+#   ./scripts/phone-test.sh +919876543210   -> send a real test SMS
 set -uo pipefail
 cd "$(dirname "$0")/.."
 [ -f .env ] && { set -a; source .env; set +a; }
