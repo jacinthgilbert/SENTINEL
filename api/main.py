@@ -34,6 +34,30 @@ import routing as routing_mod
 import zones as zones_mod
 from loop import TickLoop
 
+def _load_dotenv() -> None:
+    """Read .env into the environment at import time.
+
+    Without this the API only sees credentials that happen to be exported in
+    the shell that launched it, so Twilio would silently read as "not
+    configured" even with a correctly filled .env — which is exactly the kind
+    of thing you discover on stage.
+    """
+    from pathlib import Path
+
+    for candidate in (Path(".env"), Path(__file__).resolve().parent.parent / ".env"):
+        if not candidate.is_file():
+            continue
+        for line in candidate.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+        break
+
+
+_load_dotenv()
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
 log = logging.getLogger("sentinel.api")
 
