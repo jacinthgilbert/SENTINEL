@@ -23,7 +23,7 @@ export default function Splash() {
     <div className="splash" aria-hidden>
       <div className="splash-inner">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="splash-banner" src="/sentinel-banner.jpg" alt="Sentinel" />
+        <img className="splash-banner" src="/sentinel-wordmark.png" alt="Sentinel" />
         <div className="splash-rule" />
         <p>Flood early warning · Visakhapatnam</p>
       </div>
