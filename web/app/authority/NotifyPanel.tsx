@@ -17,6 +17,7 @@ export default function NotifyPanel() {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ name: "", phone: "", lang: "te" });
+  const [channel, setChannel] = useState("simulated");
   const [err, setErr] = useState<string | null>(null);
 
   const pull = () =>
@@ -46,7 +47,7 @@ export default function NotifyPanel() {
     try {
       const r = await fetch(`${API}/notify/send`, {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ dry_run: dry, channel: "sms" }),
+        body: JSON.stringify({ dry_run: dry, channel }),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.detail ?? "send failed");
@@ -64,7 +65,9 @@ export default function NotifyPanel() {
   }
 
   if (!s) return null;
-  const smsLive = s.channels?.sms?.live;
+  // Order matters: simulated always works, so it leads and is the safe default.
+  const order = ["simulated", "sms", "whatsapp", "telegram"];
+  const chans = order.filter((k) => s.channels?.[k]);
 
   return (
     <div className="card notifypanel" style={{ marginTop: 16 }}>
@@ -79,9 +82,30 @@ export default function NotifyPanel() {
         Arms only when the <b>forecast</b> reaches <b>{s.arm_threshold}</b>, and still
         needs a human to press it — an officer authorises before a city is messaged.
         Currently: <b>{s.worst_forecast_severity ?? "nothing"}</b>.
-        {!smsLive && <> · <span className="warn">SMS channel not configured</span></>}
         {s.exercise && <> · messages will be marked <b>EXERCISE</b></>}
       </p>
+
+      <div className="notifyrow">
+        <span className="muted">Channel</span>
+        <div className="seg">
+          {chans.map((k) => (
+            <button key={k} className={channel === k ? "on" : ""}
+                    onClick={() => setChannel(k)}
+                    title={s.channels[k].note}>
+              {k}{s.channels[k].live ? "" : " ·off"}
+            </button>
+          ))}
+        </div>
+        <span className="muted" style={{ flex: 1, minWidth: 220 }}>
+          {s.channels[channel]?.note}
+        </span>
+      </div>
+      {s.channels[channel] && !s.channels[channel].live && channel !== "simulated" && (
+        <p className="fc-foot warn">
+          {channel} is not sending. Falling back to the on-screen handset keeps the
+          demo working; the same message and code path is used either way.
+        </p>
+      )}
 
       {/* recipients */}
       <div className="notifyrow">
@@ -120,7 +144,8 @@ export default function NotifyPanel() {
         {!confirming ? (
           <button className="btn" disabled={!s.armed || busy || !s.preview.length}
                   onClick={() => setConfirming(true)}>
-            Send warning to {s.recipients_active} {s.recipients_active === 1 ? "person" : "people"}
+            Send via {channel} to {s.recipients_active}{" "}
+            {s.recipients_active === 1 ? "person" : "people"}
           </button>
         ) : (
           <>

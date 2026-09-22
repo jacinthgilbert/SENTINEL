@@ -15,7 +15,17 @@ TO=${1:-}
 : "${TWILIO_AUTH_TOKEN:?set TWILIO_AUTH_TOKEN in .env}"
 : "${TWILIO_FROM:?set TWILIO_FROM in .env}"
 
-BODY="The Sentinel test. Flood warning system check. Ignore."
+# Twilio TRIAL accounts reject free-form text: "Invalid template name. Trial
+# accounts can only use predefined SMS templates." So the default probe uses an
+# allowed template. That still answers the question that matters first — can a
+# message reach this handset AT ALL — separately from whether arbitrary text can.
+#   make sms-test TO=+91...            -> template probe (works on trial)
+#   make sms-test TO=+91... FREE=1     -> free-form (needs an upgraded account)
+if [ "${FREE:-0}" = "1" ]; then
+  BODY="The Sentinel: flood warning system test. Please ignore."
+else
+  BODY="Your Sentinel code is 4821"
+fi
 echo "  sending to $TO ..."
 SID=$(curl -s -X POST "https://api.twilio.com/2010-04-01/Accounts/$TWILIO_ACCOUNT_SID/Messages.json" \
   --data-urlencode "To=$TO" --data-urlencode "From=$TWILIO_FROM" --data-urlencode "Body=$BODY" \

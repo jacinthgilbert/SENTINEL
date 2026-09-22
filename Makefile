@@ -11,7 +11,7 @@ VENV  := .venv
 BIN   := $(VENV)/bin
 
 .DEFAULT_GOAL := help
-.PHONY: help setup prep prep-synthetic train test api web db load fresh-terrain clean stop demo check sms-test
+.PHONY: help setup prep prep-synthetic train test api web db load fresh-terrain clean stop demo check sms-test wa-test tg-list tg-test
 
 help:  ## show this help
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -56,8 +56,17 @@ web: ## run the web app on :3000
 demo: ## reset to a known-good demo state (calm, scenario, 10x)
 	@bash scripts/demo.sh
 
-sms-test: ## does SMS really reach a handset?  make sms-test TO=+91XXXXXXXXXX
-	@bash scripts/sms-test.sh $(TO)
+sms-test: ## does SMS reach a handset?  make sms-test TO=+91XXXXXXXXXX [FREE=1]
+	@FREE=$(FREE) bash scripts/sms-test.sh $(TO)
+
+wa-test: ## does WhatsApp reach a handset?  make wa-test TO=+91XXXXXXXXXX
+	@bash scripts/wa-test.sh $(TO)
+
+tg-list: ## who has opted in to the Telegram bot
+	@bash scripts/tg-test.sh
+
+tg-test: ## send a Telegram test to everyone opted in
+	@bash scripts/tg-test.sh send
 
 check: ## pre-demo smoke test: every endpoint the script touches
 	@bash scripts/check.sh
