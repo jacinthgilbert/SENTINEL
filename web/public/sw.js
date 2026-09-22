@@ -17,7 +17,9 @@ const TILES = `${VERSION}-tiles`;
 const API = `${VERSION}-api`;
 const SHELL = `${VERSION}-shell`;
 
-const SHELL_URLS = ["/", "/authority", "/manifest.json", "/icon.svg"];
+// addAll is atomic: one 404 rejects the whole install and the worker never
+// activates. Only list assets that certainly exist.
+const SHELL_URLS = ["/", "/manifest.json", "/icon-512.png"];
 const API_TIMEOUT_MS = 2500;
 const TILE_MAX = 1200;
 
