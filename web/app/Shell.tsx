@@ -2,8 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import CommandBar from "./CommandBar";
 import Sidebar from "./Sidebar";
 import Splash from "./Splash";
+import { applyTheme, getTheme } from "@/lib/theme";
 
 export default function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
@@ -12,6 +14,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   // Remember the sidebar state per viewer; harmless if storage is unavailable.
   useEffect(() => {
     try { setCollapsed(localStorage.getItem("sentinel:nav") === "collapsed"); } catch {}
+    applyTheme(getTheme());          // before first paint of the tree below
   }, []);
   const toggle = () => {
     setCollapsed((c) => {
@@ -24,6 +27,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Splash />
+      <CommandBar />
       <div className={`shell${collapsed ? " collapsed" : ""}`}>
         <Sidebar collapsed={collapsed} onToggle={toggle} />
         <div className="content">

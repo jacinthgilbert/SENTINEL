@@ -450,3 +450,137 @@ h1 { font-size: 23px; letter-spacing: -.01em; margin: 0 0 4px; font-weight: 650;
 .clockhint { color: var(--muted); font-size: 12px; margin-left: auto; }
 .reportnote { border-color: #6E2A44; color: #F0C2D8; background: rgba(60,20,40,.95); }
 .forecast, .exposure, .alertpanel, .reportpanel, .offlinepanel, .notifypanel, .console { }
+
+/* ═══ light theme — earthy parchment ═════════════════════════════════════
+   Projectors in bright rooms wash out dark interfaces badly, which is a real
+   risk for a daytime demo you do not control. Same warm family, inverted. */
+:root[data-theme="light"] {
+  --bg:        #F4EDE0;
+  --bg-2:      #EFE6D6;
+  --panel:     #FBF6EC;
+  --panel-2:   #F2E9D9;
+  --line:      #DCCFB8;
+  --line-soft: #E9DEC9;
+
+  --text:      #2C2318;
+  --text-dim:  #4A3E2E;
+  --muted:     #7B6C57;
+
+  --accent:    #A85C26;
+  --accent-2:  #64754E;
+  --clay:      #93482C;
+  --ochre:     #A9781F;
+
+  --live:      #55703B;
+  --stale:     #A9781F;
+  --offline:   #A2937E;
+  --danger:    #93301D;
+
+  /* ramp darkened so the pale end still reads on parchment */
+  --r1: #E0CEA6;
+  --r2: #CBA75F;
+  --r3: #B07F34;
+  --r4: #93482C;
+  --r5: #5E2317;
+
+  --water:      #3A6076;
+  --water-line: #29485A;
+}
+:root[data-theme="light"] .splash {
+  background: radial-gradient(120% 80% at 50% 40%, #FDF8EE 0%, #F1E7D6 62%, #E6D9C2 100%);
+}
+:root[data-theme="light"] .splash h1 {
+  background: linear-gradient(180deg, #7A5A2A 0%, var(--ochre) 45%, var(--clay) 100%);
+  -webkit-background-clip: text; background-clip: text;
+}
+:root[data-theme="light"] .sidebar {
+  background: linear-gradient(180deg, #EFE6D6 0%, #E9DECB 100%);
+}
+:root[data-theme="light"] .brand-mark { color: #FFF6E8; }
+:root[data-theme="light"] .seg button.on { color: #FFF6E8; }
+:root[data-theme="light"] .btn.primary { color: #FFF6E8; }
+:root[data-theme="light"] .btn:hover:not(:disabled) { background: #EFE2CB; }
+:root[data-theme="light"] .badge { background: #F0E0BC; color: #6E4E12; }
+:root[data-theme="light"] .chip.on { background: #E6EDDD; border-color: #B8C7A4; }
+:root[data-theme="light"] .leaflet-container { background: #E6DCC6; }
+:root[data-theme="light"] .map-nobase .leaflet-container { background: #E6DCC6; }
+:root[data-theme="light"] .overlay,
+:root[data-theme="light"] .legend,
+:root[data-theme="light"] .mapstats,
+:root[data-theme="light"] .viewtoggle,
+:root[data-theme="light"] .routebtn,
+:root[data-theme="light"] .routeinfo,
+:root[data-theme="light"] .note { background: rgba(251,246,236,.96); }
+:root[data-theme="light"] .banner,
+:root[data-theme="light"] .stalenote { background: rgba(245,232,203,.97); color: #6E4E12; border-color: #C9AE72; }
+:root[data-theme="light"] .err { background: rgba(250,228,222,.97); color: #7E2A1A; border-color: #D2A294; }
+:root[data-theme="light"] .confirm-bar { background: #F7E4DC; border-color: #C79484; }
+:root[data-theme="light"] .stat.hi,
+:root[data-theme="light"] .exp-cell.hi { background: linear-gradient(180deg, #F7EBD2, var(--panel)); border-color: #D5BC8A; }
+:root[data-theme="light"] .tbl tr.on td,
+:root[data-theme="light"] .dtable tr.assigned td { background: rgba(168,92,38,.08); }
+:root[data-theme="light"] .rep-head:hover { background: rgba(0,0,0,.03); }
+:root[data-theme="light"] .phone-top { background: #EFE4CF; }
+:root[data-theme="light"] .exercise { background: #F0E0BC; color: #6E4E12; }
+:root[data-theme="light"] .reportnote { background: rgba(250,228,240,.96); color: #7A2550; border-color: #D2A0BC; }
+
+/* theme toggle */
+.theme-row { display: flex; gap: 8px; margin-bottom: 9px; }
+.theme-row .seg { flex: 1; }
+.theme-row .seg button { flex: 1; }
+.shell.collapsed .theme-row .seg button span { display: none; }
+
+/* ── command bar ─────────────────────────────────────────────────────── */
+.cmd-backdrop {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(10,8,6,.55); backdrop-filter: blur(3px);
+  display: flex; justify-content: center; align-items: flex-start;
+  padding-top: 13vh; animation: fade .16s var(--ease);
+}
+:root[data-theme="light"] .cmd-backdrop { background: rgba(60,48,32,.34); }
+@keyframes fade { from { opacity: 0 } to { opacity: 1 } }
+
+.cmd {
+  width: min(600px, 92vw);
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.45);
+  animation: cmd-in .2s var(--ease);
+}
+@keyframes cmd-in { from { opacity: 0; transform: translateY(-8px) scale(.985) } to { opacity: 1; transform: none } }
+
+.cmd-input {
+  width: 100%; border: 0; border-bottom: 1px solid var(--line);
+  border-radius: 0; background: transparent; padding: 15px 18px; font-size: 15px;
+}
+.cmd-input:focus { outline: none; border-color: var(--line); }
+.cmd-list { max-height: 50vh; overflow-y: auto; padding: 7px; }
+.cmd-group {
+  font-size: 10px; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--muted); padding: 9px 11px 5px;
+}
+.cmd-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  background: transparent; border: 0; color: var(--text-dim);
+  font: inherit; font-size: 13.5px; text-align: left; cursor: pointer;
+  padding: 9px 11px; border-radius: var(--radius-sm);
+}
+.cmd-item.on { background: var(--panel-2); color: var(--text); }
+.cmd-item kbd { margin-left: auto; }
+kbd {
+  font: inherit; font-size: 10.5px; color: var(--muted);
+  border: 1px solid var(--line); border-bottom-width: 2px;
+  border-radius: 4px; padding: 1px 6px; background: var(--bg);
+}
+.cmd-empty { padding: 20px; text-align: center; color: var(--muted); font-size: 13px; }
+.cmd-foot {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 9px 14px; border-top: 1px solid var(--line);
+  font-size: 11.5px; color: var(--muted); background: var(--bg-2);
+}
+
+.nav-badge.danger { background: var(--danger); }
+.cmd-hint {
+  margin-left: auto; font-size: 11px; color: var(--muted);
+  display: flex; align-items: center; gap: 5px;
+}

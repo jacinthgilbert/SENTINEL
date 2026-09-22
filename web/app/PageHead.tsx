@@ -11,10 +11,11 @@ export default function PageHead({ title, sub }: { title: string; sub?: string }
   const { state, status } = useWorldState();
   return (
     <header className="page-head">
-      <div>
+      <div style={{ flex: 1, minWidth: 180 }}>
         <h1 className="page-title">{title}</h1>
         {sub && <p className="page-sub">{sub}</p>}
       </div>
+      <span className="cmd-hint"><kbd>⌘</kbd><kbd>K</kbd> commands</span>
       <span className="pill">
         {state?.mode === "scenario" && <span className="badge">EXERCISE</span>}
         <span className={`dot ${status}`} />
