@@ -1,0 +1,17 @@
+node_modules/
+.next/
+__pycache__/
+*.pyc
+.venv/
+.env
+.DS_Store
+
+# OSMnx Overpass response cache — regenerated on demand
+prep/cache/
+
+# Raw inputs: large, and refetchable in one command.
+data/dem.tif
+data/population.tif
+
+# Derived artifacts ARE committed (see README): hand.tif is expensive to
+# compute, and the geojson/graphml let a teammate clone and run immediately.
