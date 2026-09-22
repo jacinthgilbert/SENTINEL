@@ -32,6 +32,10 @@ export default function MapView({ gaugeCm }: Props) {
   const [area, setArea] = useState<number | null>(null);
   const [synthetic, setSynthetic] = useState(false);
   const [noBasemap, setNoBasemap] = useState(false);
+  // Set once the vector layers exist. Without this the first draw races map
+  // init, and a CONSTANT gauge (rain = 0) never re-triggers the effect — so
+  // the map would sit empty forever until something moved.
+  const [ready, setReady] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   // ── init once ──────────────────────────────────────────────────────────
@@ -97,6 +101,7 @@ export default function MapView({ gaugeCm }: Props) {
             },
           })
           .addTo(map);
+        setReady(true);
       } catch (e: any) {
         setErr(e.message ?? String(e));
       }
@@ -110,7 +115,7 @@ export default function MapView({ gaugeCm }: Props) {
 
   // ── follow the gauge ───────────────────────────────────────────────────
   useEffect(() => {
-    if (gaugeCm == null || !waterRef.current || !LRef.current) return;
+    if (!ready || gaugeCm == null || !waterRef.current || !LRef.current) return;
     if (Math.abs(gaugeCm - lastCm.current) < REFETCH_CM) return;
     lastCm.current = gaugeCm;
 
@@ -148,7 +153,7 @@ export default function MapView({ gaugeCm }: Props) {
     return () => {
       stale = true;
     };
-  }, [gaugeCm]);
+  }, [gaugeCm, ready]);
 
   return (
     <div className="mapwrap">

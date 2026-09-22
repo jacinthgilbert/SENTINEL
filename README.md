@@ -54,7 +54,7 @@ Full plan: `../flood-mvp-plan.md`
 - [x] **1 — Spine.** WorldState contract, tick loop, SSE, schema, compose.
 - [x] **2 — Geo prep.** DEM → HAND, road graph, H3 zones, population.
 - [x] **3 — Inundation.** HAND threshold → polygon, live Leaflet map.
-- [ ] 4 — Sim console: slider, clock, speed. *(F5 digital twin)*
+- [x] **4 — Sim console.** Rainfall slider, play/pause, 1×/10×/60×. *(F5 digital twin)*
 - [ ] 5 — Nowcast: XGBoost quantile + SHAP. *(F1)*
 - [ ] 6 — Risk + zones + vulnerable population.
 - [ ] 7 — Routing: NetworkX edge removal. *(F2)*
@@ -146,6 +146,42 @@ Two design notes worth keeping:
   blue→yellow→magenta rather than green→red, monotonic in lightness so it also
   survives greyscale and projector washout. Water uses a separate colour so the
   two never read as one scale.
+
+## Step 4 — the digital twin
+
+Live and Scenario are the same pipeline. The only difference is where
+`rainfall_mm_hr` comes from, and both drive the identical reservoir in
+`api/adapters.py:advance_reservoir`. That is enforced in code, not asserted
+in a slide — which is the answer when a judge asks whether the demo is real.
+
+| Endpoint | Does |
+|---|---|
+| `GET /sim` | current mode, speed, rainfall, play state |
+| `POST /sim/control` | `{mode, rain_mm_hr, speed, playing, reset}` |
+
+**The slider sets rainfall, never water level.** Dragging stage directly would
+skip the rainfall → runoff → stage chain that the nowcast model exists to
+predict — i.e. it would fake the exact thing being judged. Setting
+`rain_mm_hr` outside scenario mode returns **409**, and values are clamped to
+0–150 mm/hr.
+
+Speed lives on the tick loop, not the adapter: an adapter is asked to advance
+`dt_s` of *world* time and has no idea how long that took in the room, so a 10×
+demo and a 1× live feed exercise identical code.
+
+Measured, cloudburst preset at 10×:
+
+```
+rain 0 -> 120 mm/hr instantly
+gauge  40 -> 210 cm over ~180 world-seconds   (the lag is the point)
+flooded  2.77 -> 14.27 km2
+zones >50%  13 -> 154
+rain -> 0 : gauge recedes smoothly, does not snap back
+```
+
+The ~170 s drainage time constant becomes ~17 s of real time at 10×: long
+enough to watch rain lead water, short enough to hold a room. That gap is the
+window a 30–120 minute forecast lives in.
 
 ### Blocked in the authoring sandbox — run these on your own network
 

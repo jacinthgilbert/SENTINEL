@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import SimConsole from "./SimConsole";
 import { useWorldState } from "@/lib/useWorldState";
 
 // Leaflet touches window on import, so it cannot server-render.
@@ -28,6 +29,7 @@ export default function Home() {
           <p className="sub">Flood early-warning and response · Visakhapatnam</p>
         </div>
         <span className="pill">
+          {state?.mode === "scenario" && <span className="badge">SCENARIO</span>}
           <span className={`dot ${status}`} />
           {STATUS_TEXT[status]}
           {ageMs !== null && status !== "live" && (
@@ -68,13 +70,15 @@ export default function Home() {
         </div>
       </div>
 
+      <SimConsole tick={state?.tick ?? null} />
+
       <MapView gaugeCm={gauge} />
 
       <footer>
-        <strong>Step 3 — inundation.</strong> The gauge drives a HAND threshold; the
-        blue extent and the zone shading are both recomputed from it. Water is a
-        separate colour from the risk ramp so the two never read as one scale, and
-        the ramp is colour-blind-safe by design rather than as a later fix.
+        <strong>Step 4 — digital twin.</strong> Live and Scenario run the identical
+        pipeline; only the source of <code>rainfall_mm_hr</code> differs. Drive the
+        rain and the reservoir, HAND threshold, extent and zone shading all follow —
+        the same code path that a real gauge would drive.
       </footer>
     </main>
   );

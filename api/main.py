@@ -12,7 +12,7 @@ import logging
 import os
 from contextlib import asynccontextmanager, suppress
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
@@ -29,6 +29,19 @@ ADAPTER_NAME = os.getenv("ADAPTER", "synthetic")
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 HEARTBEAT_S = 15.0          # keeps proxies from closing an idle SSE stream
+
+# 10x is the demo default: the reservoir's ~170 s lag becomes ~17 s of real
+# time — long enough for judges to SEE rain lead water, short enough to hold
+# a room. 60x compresses a two-hour event into two minutes.
+SPEEDS = (1, 10, 60)
+DEFAULT_SCENARIO_SPEED = 10.0
+MAX_RAIN_MM_HR = 150.0
+PRESETS = {
+    "calm": 0.0,
+    "steady": 20.0,
+    "heavy": 60.0,
+    "cloudburst": 120.0,
+}
 
 loop: TickLoop
 
@@ -173,3 +186,66 @@ def get_facilities() -> dict:
         return zones_mod.facilities()
     except FileNotFoundError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from None
+
+
+# ── Step 4: the digital twin console ─────────────────────────────────────
+def _sim_state() -> dict:
+    ad = loop.adapter
+    st = loop.state
+    return {
+        "mode": st.mode,
+        "playing": loop.playing,
+        "speed": loop.speed,
+        "speeds": list(SPEEDS),
+        "rain_mm_hr": round(getattr(ad, "rain_mm_hr", st.rainfall_mm_hr), 1),
+        "max_rain_mm_hr": MAX_RAIN_MM_HR,
+        "presets": PRESETS,
+        "tick": st.tick,
+        "world_t": st.t.isoformat(),
+        "gauge_cm": round(next(iter(st.stages.values()), 0.0), 1),
+        "tick_interval_s": TICK_INTERVAL_S,
+    }
+
+
+@app.get("/sim")
+def get_sim() -> dict:
+    return _sim_state()
+
+
+@app.post("/sim/control")
+def post_sim_control(body: dict = Body(default={})) -> dict:
+    """Drive the twin: switch mode, set rainfall, change speed, pause, reset.
+
+    Rainfall is the ONLY forcing exposed. Water level is never settable —
+    it is always the reservoir's answer to the rain, which is what keeps the
+    demo honest about the model it is showing off.
+    """
+    mode = body.get("mode")
+    if mode in ("scenario", "live"):
+        want = "scenario" if mode == "scenario" else ADAPTER_NAME
+        if loop.state.mode != mode:
+            speed = DEFAULT_SCENARIO_SPEED if mode == "scenario" else 1.0
+            loop.set_adapter(adapters.build(want), speed=speed)
+
+    if (rain := body.get("rain_mm_hr")) is not None:
+        ad = loop.adapter
+        if not hasattr(ad, "rain_mm_hr"):
+            raise HTTPException(409, "rainfall is only settable in scenario mode")
+        try:
+            ad.rain_mm_hr = max(0.0, min(float(rain), MAX_RAIN_MM_HR))
+        except (TypeError, ValueError):
+            raise HTTPException(422, "rain_mm_hr must be a number") from None
+
+    if (speed := body.get("speed")) is not None:
+        try:
+            loop.speed = max(0.1, min(float(speed), 120.0))
+        except (TypeError, ValueError):
+            raise HTTPException(422, "speed must be a number") from None
+
+    if (playing := body.get("playing")) is not None:
+        loop.playing = bool(playing)
+
+    if body.get("reset"):
+        loop.reset()
+
+    return _sim_state()
