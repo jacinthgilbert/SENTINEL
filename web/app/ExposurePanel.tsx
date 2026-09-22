@@ -49,7 +49,7 @@ export default function ExposurePanel() {
   const sev = risk.by_severity ?? {};
 
   return (
-    <div className="card exposure">
+    <div className="card">
       <div className="label">Exposure &amp; critical infrastructure</div>
 
       <div className="exp-grid">

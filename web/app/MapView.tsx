@@ -13,11 +13,11 @@ const CENTER: [number, number] = [17.725, 83.245];
 
 /** Visible on a dark basemap AND when tiles fail to load entirely. */
 const ZONE_BASE_STYLE = {
-  color: "#5b7085",
+  color: "#6B5B48",
   weight: 0.6,
-  opacity: 0.55,
-  fillColor: "#8fa3b8",
-  fillOpacity: 0.06,
+  opacity: 0.5,
+  fillColor: "#A1907B",
+  fillOpacity: 0.05,
 };
 const REFETCH_CM = 5;        // only re-request when the gauge really moved
 
@@ -102,7 +102,7 @@ export default function MapView({ gaugeCm, reportMode = false }: Props) {
         routeRef.current = leaflet
           .geoJSON(undefined, {
             style: (f: any) => ({
-              color: f?.properties?.degraded ? "#fecc5c" : "#2ea043",
+              color: f?.properties?.degraded ? "#D9A441" : "#7E9B5F",
               weight: f?.properties?.priority ? 3 : 4.5,
               opacity: 0.95,
               dashArray: f?.properties?.degraded ? "6 5" : undefined,
@@ -116,10 +116,10 @@ export default function MapView({ gaugeCm, reportMode = false }: Props) {
               const p = f.properties ?? {};
               return leaflet.circleMarker(latlng, {
                 radius: 5 + 5 * (p.trust ?? 0),
-                color: p.verified ? "#ffffff" : "#6e7681",
+                color: p.verified ? "#F3E7D3" : "#7A6A58",
                 weight: p.verified ? 1.5 : 1,
                 dashArray: p.verified ? undefined : "2 2",
-                fillColor: p.verified ? "#e7298a" : "#3a4552",
+                fillColor: p.verified ? "#C9803F" : "#4A3F33",
                 fillOpacity: p.verified ? 0.9 : 0.45,
               });
             },
@@ -175,7 +175,7 @@ export default function MapView({ gaugeCm, reportMode = false }: Props) {
                 radius: 4,
                 color: "#ffffff",
                 weight: 1,
-                fillColor: kind === "hospital" ? "#e7298a" : shelter ? "#fecc5c" : "#41b6c4",
+                fillColor: kind === "hospital" ? "#B3462F" : shelter ? "#D9A441" : "#8FA07A",
                 fillOpacity: 0.95,
               });
             },
@@ -337,7 +337,7 @@ export default function MapView({ gaugeCm, reportMode = false }: Props) {
         view === "forecast" && !!r.severity_forecast && !r.severity;
       return {
         ...ZONE_BASE_STYLE,
-        color: escalating ? "#ffd591" : ZONE_BASE_STYLE.color,
+        color: escalating ? "#E8B96B" : ZONE_BASE_STYLE.color,
         weight: escalating ? 1.6 : ZONE_BASE_STYLE.weight,
         opacity: escalating ? 0.95 : ZONE_BASE_STYLE.opacity,
         fillColor: riskColor(score),
@@ -435,7 +435,7 @@ export default function MapView({ gaugeCm, reportMode = false }: Props) {
         </div>
         {view === "forecast" && (
           <div className="legend-row">
-            <i style={{ background: "transparent", border: "1.5px solid #ffd591" }} />
+            <i style={{ background: "transparent", border: "1.5px solid #E8B96B" }} />
             Escalating
           </div>
         )}

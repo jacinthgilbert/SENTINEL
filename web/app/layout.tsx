@@ -1,19 +1,21 @@
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import Shell from "./Shell";
 
 export const metadata: Metadata = {
   title: "The Sentinel",
-  description: "Flood early-warning and response platform",
+  description: "Flood early-warning and response · Visakhapatnam",
   manifest: "/manifest.json",
-  themeColor: "#0b0f14",
   icons: { icon: "/icon.svg" },
 };
+
+export const viewport: Viewport = { themeColor: "#14110D" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body><Shell>{children}</Shell></body>
     </html>
   );
 }

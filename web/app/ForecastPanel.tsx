@@ -61,7 +61,7 @@ export default function ForecastPanel({ tick }: { tick: number | null }) {
 
   if (!nc.ready) {
     return (
-      <div className="card forecast">
+      <div className="card">
         <div className="label">Nowcast</div>
         <p className="fc-warm">
           Warming up — {nc.buckets ?? 0} of 13 five-minute buckets.
@@ -81,7 +81,7 @@ export default function ForecastPanel({ tick }: { tick: number | null }) {
   const storms = m30?.by_regime?.storms?.skill;
 
   return (
-    <div className="card forecast">
+    <div className="card">
       <div className="fc-head">
         <div className="label">Nowcast · water level</div>
         <button className="btn ghost sm" onClick={() => setShowWhy((v) => !v)}>

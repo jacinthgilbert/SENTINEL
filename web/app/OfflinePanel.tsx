@@ -71,7 +71,7 @@ export default function OfflinePanel() {
   const pct = cached === null ? 0 : Math.min(100, Math.round((cached / total) * 100));
 
   return (
-    <div className={`card offlinepanel${online ? "" : " off"}`}>
+    <div className="card">
       <div className="fc-head">
         <div className="label">Works without a network</div>
         <span className="pill">

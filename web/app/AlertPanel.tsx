@@ -75,7 +75,7 @@ export default function AlertPanel() {
   }
 
   return (
-    <div className="card alertpanel">
+    <div className="card">
       <div className="fc-head">
         <div className="label">Alerting</div>
         <div className="chan">

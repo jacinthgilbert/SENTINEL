@@ -42,7 +42,7 @@ export default function ReportPanel({ reportMode, setReportMode }: Props) {
   const feats: Feature[] = data.geojson?.features ?? [];
 
   return (
-    <div className="card reportpanel">
+    <div className="card">
       <div className="fc-head">
         <div className="label">Citizen reports</div>
         <div style={{ display: "flex", gap: 8 }}>
