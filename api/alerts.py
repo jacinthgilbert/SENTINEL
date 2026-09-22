@@ -96,8 +96,6 @@ class Dispatcher:
             "simulated": {"live": True, "note": "always on; drives the demo panel"},
             "sms": {"live": bool(sid and tok),
                     "note": "set TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM"},
-            "whatsapp": {"live": bool(sid and tok),
-                         "note": "Twilio sandbox: recipients must join, expires after 3 days"},
             "voice": {"live": False,
                       "note": "browser speech in the panel; Piper + Twilio <Play> in production"},
         }
