@@ -11,7 +11,7 @@ VENV  := .venv
 BIN   := $(VENV)/bin
 
 .DEFAULT_GOAL := help
-.PHONY: help setup prep prep-synthetic test api web db load fresh-terrain clean stop
+.PHONY: help setup prep prep-synthetic train test api web db load fresh-terrain clean stop demo check
 
 help:  ## show this help
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -41,6 +41,9 @@ fresh-terrain: ## drop synthetic terrain so `make prep` rebuilds from the real D
 	@rm -f data/dem.tif data/hand.tif data/zones.geojson data/dem.SYNTHETIC
 	@echo "terrain cleared — now: make prep"
 
+train: ## train the nowcast models (writes data/nowcast/, ~2 min)
+	@$(BIN)/python prep/train_nowcast.py
+
 test: ## verify the D8/HAND implementation against known-answer terrain
 	@$(BIN)/python prep/tests/test_hydrology.py
 
@@ -49,6 +52,12 @@ api: ## run the API on :8000
 
 web: ## run the web app on :3000
 	@cd web && npm install --no-audit --no-fund && npm run dev
+
+demo: ## reset to a known-good demo state (calm, scenario, 10x)
+	@bash scripts/demo.sh
+
+check: ## pre-demo smoke test: every endpoint the script touches
+	@bash scripts/check.sh
 
 stop: ## free :8000 and :3000 (kills stray dev servers)
 	@-pkill -f "uvicorn main:app" 2>/dev/null || true

@@ -1,0 +1,2 @@
+Real elevation from AWS Terrain Tiles (elevation-tiles-prod), terrarium z13, reprojected to EPSG:4326 at 1 arcsec.
+Underlying data: SRTM and national DEMs. Attribution required.

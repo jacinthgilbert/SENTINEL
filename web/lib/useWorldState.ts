@@ -33,8 +33,15 @@ export function useWorldState() {
       setState(JSON.parse(e.data) as WorldState);
       setStatus("live");
     };
+    // If the stream never opens at all, say OFFLINE rather than sitting on
+    // "Connecting…" forever. A first load with no backend is the commonest
+    // real case — the phone was opened during the outage, not before it.
+    const firstContact = setTimeout(() => {
+      if (!lastSeen.current) setStatus("offline");
+    }, 6000);
+
     es.onerror = () => {
-      if (!lastSeen.current) setStatus("connecting");
+      if (!lastSeen.current) setStatus((s) => (s === "offline" ? s : "connecting"));
     };
 
     const timer = setInterval(() => {
@@ -45,6 +52,7 @@ export function useWorldState() {
     }, 1000);
 
     return () => {
+      clearTimeout(firstContact);
       clearInterval(timer);
       es.close();
     };

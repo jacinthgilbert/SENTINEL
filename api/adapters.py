@@ -29,8 +29,23 @@ BASE_STAGE = 40.0
 
 
 def advance_reservoir(stage_cm: float, rain_mm_hr: float, dt_s: float) -> float:
-    """One linear-reservoir step. Pure."""
-    stage = stage_cm + (_K_IN * rain_mm_hr - _K_OUT * (stage_cm - BASE_STAGE)) * dt_s
+    """Advance the linear reservoir by dt_s, EXACTLY.
+
+    For piecewise-constant rain the ODE  ds/dt = K_IN*r - K_OUT*(s - base)
+    has a closed-form solution, so there is no reason to integrate numerically:
+
+        s_eq  = base + (K_IN/K_OUT) * r
+        s(t+dt) = s_eq + (s - s_eq) * exp(-K_OUT * dt)
+
+    This matters. Explicit Euler with the 300 s step used in training gives an
+    update multiplier of 1 - K_OUT*dt = -0.8: convergent but OSCILLATING, so
+    the training data carried ringing artifacts. At 60x sim speed the same
+    coarseness made the gauge leap 130 -> 240 cm in six ticks. The closed form
+    is exact at every dt, which is what actually makes "same code at 1x and
+    60x" true rather than merely intended.
+    """
+    s_eq = BASE_STAGE + (_K_IN / _K_OUT) * rain_mm_hr
+    stage = s_eq + (stage_cm - s_eq) * math.exp(-_K_OUT * dt_s)
     return max(BASE_STAGE, stage)
 
 

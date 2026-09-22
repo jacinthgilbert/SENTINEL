@@ -149,3 +149,181 @@ code { background: var(--panel); border: 1px solid var(--line); padding: 1px 6px
 @media (max-width: 720px) {
   .clockhint { margin-left: 0; width: 100%; }
 }
+
+/* ── Step 5: forecast panel ────────────────────────────────────────────── */
+.forecast { margin-top: 16px; }
+.fc-head { display: flex; align-items: center; justify-content: space-between; }
+.btn.sm { padding: 3px 10px; font-size: 12px; }
+.fc-warm { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+
+.fc-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.fc-table td { padding: 5px 0; vertical-align: middle; }
+.fc-h { width: 52px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.fc-v { width: 74px; font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.fc-v .unit { font-size: 11px; color: var(--muted); margin-left: 3px; font-weight: 400; }
+.fc-bar { position: relative; height: 16px; background: #0e141b; border-radius: 4px; }
+.fc-bar .band { position: absolute; top: 4px; height: 8px; background: rgba(68,147,248,.35); border-radius: 4px; }
+.fc-bar .tick { position: absolute; top: 1px; width: 2px; height: 14px; background: var(--accent); border-radius: 1px; }
+.fc-now .tick { background: #e6edf3; }
+.fc-band { width: 48px; text-align: right; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.fc-foot { margin: 10px 0 0; font-size: 12px; color: var(--muted); line-height: 1.6; }
+.fc-foot b { color: var(--text); }
+.warn { color: #ffd591; }
+
+.why { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.why-row { display: grid; grid-template-columns: 1fr auto 82px 44px; gap: 10px; padding: 4px 0; font-size: 13px; align-items: baseline; }
+.why-label { color: var(--text); }
+.why-val { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+.why-phi { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.why-phi.up { color: #e7298a; }
+.why-phi.down { color: #41b6c4; }
+.why-share { text-align: right; color: var(--muted); font-size: 12px; }
+
+/* ── Step 6: risk + exposure ───────────────────────────────────────────── */
+.viewtoggle {
+  position: absolute; top: 14px; left: 60px; z-index: 500;
+  background: rgba(19,26,34,.94);
+}
+.exposure { margin-top: 16px; }
+.exp-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px;
+}
+.exp-cell {
+  background: #0e141b; border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px 12px;
+}
+.exp-cell.hi { border-color: #7a4a00; background: #17181a; }
+.exp-n { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.exp-n .of { font-size: 13px; color: var(--muted); font-weight: 400; }
+.exp-l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.warn3 { color: #e7298a; }
+.warn2 { color: #fecc5c; }
+.warn1 { color: #41b6c4; }
+.fc-foot.missing { color: #ffd591; }
+.fc-foot code { font-size: 11px; }
+
+@media (max-width: 720px) {
+  .exp-grid { grid-template-columns: repeat(2, 1fr); }
+  .viewtoggle { left: 14px; top: 56px; }
+}
+
+/* ── Step 7: routing ───────────────────────────────────────────────────── */
+.routebtn {
+  position: absolute; top: 14px; right: 14px; z-index: 500;
+  background: rgba(19,26,34,.94);
+}
+.routebtn.on { border-color: var(--accent); color: var(--accent); }
+.routeinfo {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  z-index: 500; background: rgba(19,26,34,.96); border: 1px solid var(--line);
+  border-radius: 8px; padding: 7px 14px; font-size: 13px; max-width: 80%;
+}
+.mapstats { top: 58px; }
+
+/* ── Step 8: alerting ──────────────────────────────────────────────────── */
+.alertpanel { margin-top: 16px; }
+.chan { display: flex; gap: 6px; }
+.chip {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
+  padding: 3px 7px; border-radius: 4px; border: 1px solid var(--line);
+  color: var(--muted);
+}
+.chip.on { color: var(--live); border-color: #1e5c2c; background: #10261a; }
+
+.alertgrid { display: grid; grid-template-columns: 320px 1fr; gap: 18px; margin-top: 12px; }
+
+.phone {
+  border: 1px solid var(--line); border-radius: 14px; background: #0b0f14;
+  overflow: hidden; transition: box-shadow .2s, transform .1s;
+}
+.phone.buzz { box-shadow: 0 0 0 3px rgba(231,41,138,.35); transform: translateX(-2px); }
+.phone-top {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 12px; background: #131a22; border-bottom: 1px solid var(--line);
+  font-size: 11px; color: var(--muted);
+}
+.sig { letter-spacing: -2px; }
+.langtabs { margin: 10px; width: calc(100% - 20px); }
+.langtabs button { flex: 1; }
+.inbox { max-height: 300px; overflow-y: auto; padding: 0 10px 10px; }
+.empty { color: var(--muted); font-size: 12px; padding: 6px 2px; line-height: 1.6; }
+
+.sms {
+  background: #131a22; border: 1px solid var(--line); border-left-width: 3px;
+  border-radius: 8px; padding: 8px 10px; margin-bottom: 8px;
+}
+.sms.warn3 { border-left-color: #e7298a; }
+.sms.warn2 { border-left-color: #fecc5c; }
+.sms.warn1 { border-left-color: #41b6c4; }
+.sms-head { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); }
+.exercise {
+  background: #4a2c00; color: #ffd591; font-size: 9px; font-weight: 700;
+  padding: 1px 5px; border-radius: 3px; letter-spacing: .06em;
+}
+.sms-body { font-size: 12.5px; line-height: 1.55; margin-top: 4px; }
+.speakbtn { margin-top: 7px; }
+
+.alertmeta { min-width: 0; }
+.metarow { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; font-size: 13px; }
+.metarow .muted { color: var(--muted); }
+.sevtag {
+  text-transform: uppercase; font-size: 10px; font-weight: 700; letter-spacing: .07em;
+  border: 1px solid currentColor; border-radius: 4px; padding: 2px 6px;
+}
+.caplink { display: inline-block; margin-top: 12px; text-decoration: none; }
+
+@media (max-width: 860px) { .alertgrid { grid-template-columns: 1fr; } }
+
+/* ── Step 9: citizen reports ───────────────────────────────────────────── */
+.reportpanel { margin-top: 16px; }
+.map.reporting { cursor: crosshair; }
+.reportnote { border-color: #7a2a5a; color: #ffc7e6; background: rgba(60,15,40,.94); }
+.muted-n { color: var(--muted); }
+
+.replist { margin-top: 12px; }
+.rep { border-bottom: 1px solid var(--line); }
+.rep:last-child { border-bottom: 0; }
+.rep-head {
+  display: grid; grid-template-columns: 12px 90px 62px 1fr 42px 62px;
+  gap: 10px; align-items: center; width: 100%;
+  background: none; border: 0; color: var(--text); font: inherit;
+  padding: 7px 2px; cursor: pointer; text-align: left;
+}
+.rep-head:hover { background: rgba(255,255,255,.03); }
+.rep-head .muted { color: var(--muted); font-size: 12px; }
+.rep-head .ok { color: var(--live); font-size: 12px; }
+.trustbar { height: 6px; background: #0e141b; border-radius: 3px; overflow: hidden; }
+.trustbar > i { display: block; height: 100%; background: var(--accent); }
+.trustnum { font-variant-numeric: tabular-nums; font-size: 12px; text-align: right; }
+.rep-detail { padding: 4px 0 10px 22px; }
+
+/* ── Step 10: authority dashboard ──────────────────────────────────────── */
+.link { color: var(--accent); text-decoration: none; }
+.link:hover { text-decoration: underline; }
+
+.dtable { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+.dtable th {
+  text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted); font-weight: 500; padding: 6px 8px; border-bottom: 1px solid var(--line);
+}
+.dtable td { padding: 7px 8px; border-bottom: 1px solid #161d26; vertical-align: middle; }
+.dtable tr.assigned td { background: rgba(68,147,248,.06); }
+.dtable .num { text-align: right; font-variant-numeric: tabular-nums; }
+.dtable .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+.dtable .small { font-size: 11.5px; }
+.dtable .ok { color: var(--live); }
+.dtable .warnish { color: var(--stale); }
+.dtable .bad { color: #e7298a; font-weight: 600; }
+
+/* ── Step 11: offline ──────────────────────────────────────────────────── */
+.offlinepanel { margin-top: 16px; }
+.offlinepanel.off { border-color: #7a4a00; background: #17181a; }
+.offlinepanel .exp-cell .bar { margin-top: 8px; }
+.offlinepanel .btn { width: 100%; }
+.offlinepanel .btn:disabled { opacity: .7; cursor: default; }
+/* Sits below the synthetic-terrain banner rather than on top of it. */
+.stalenote {
+  border-color: #7a4a00; color: #ffd591; background: rgba(60,40,0,.96);
+  top: auto; bottom: 54px; left: 50%; transform: translateX(-50%);
+  max-width: 78%; text-align: center;
+}

@@ -1,7 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import AlertPanel from "./AlertPanel";
+import OfflinePanel from "./OfflinePanel";
+import ReportPanel from "./ReportPanel";
+import ExposurePanel from "./ExposurePanel";
+import ForecastPanel from "./ForecastPanel";
 import SimConsole from "./SimConsole";
+import Link from "next/link";
+import { useState } from "react";
 import { useWorldState } from "@/lib/useWorldState";
 
 // Leaflet touches window on import, so it cannot server-render.
@@ -19,6 +26,7 @@ const STATUS_TEXT: Record<string, string> = {
 
 export default function Home() {
   const { state, status, ageMs } = useWorldState();
+  const [reportMode, setReportMode] = useState(false);
   const gauge = state ? Object.values(state.stages)[0] ?? null : null;
 
   return (
@@ -26,7 +34,10 @@ export default function Home() {
       <header className="head">
         <div>
           <h1>The Sentinel</h1>
-          <p className="sub">Flood early-warning and response · Visakhapatnam</p>
+          <p className="sub">
+            Flood early-warning and response · Visakhapatnam ·{" "}
+            <Link href="/authority" className="link">authority dashboard</Link>
+          </p>
         </div>
         <span className="pill">
           {state?.mode === "scenario" && <span className="badge">SCENARIO</span>}
@@ -70,12 +81,34 @@ export default function Home() {
         </div>
       </div>
 
+      <ForecastPanel tick={state?.tick ?? null} />
+
       <SimConsole tick={state?.tick ?? null} />
 
-      <MapView gaugeCm={gauge} />
+      <MapView gaugeCm={gauge} reportMode={reportMode} />
+
+      <ExposurePanel />
+
+      <ReportPanel reportMode={reportMode} setReportMode={setReportMode} />
+
+      <AlertPanel />
+
+      <OfflinePanel />
 
       <footer>
-        <strong>Step 4 — digital twin.</strong> Live and Scenario run the identical
+        <strong>Step 11 — offline.</strong> Pre-download the area, then turn off the
+        network: the map still renders, risk is labelled <em>last known</em>, and
+        reports queue until the connection returns.
+        <strong> Step 9 — crowdsourced verification.</strong> A lone report is
+        ignored; three independent reporters within 300 m move the risk map.
+        <strong> Step 8 — inclusive alerting.</strong> Telugu first, then Hindi and
+        English, in one CAP 1.2 document. <strong>Step 6 — risk fusion.</strong> Toggle the map to <b>+60 min</b>: zones
+        outlined amber are calm right now but forecast to be warned. That gap is
+        the product. <strong>Step 5 — AI nowcasting.</strong> Quantile gradient boosting at four
+        horizons, intervals calibrated on a held-out split, and exact Shapley
+        attributions computed by enumerating all 2¹⁰ coalitions. Trained on
+        simulated storms with observation and forecast noise, held out by whole
+        sequence. <strong>Step 4 — digital twin.</strong> Live and Scenario run the identical
         pipeline; only the source of <code>rainfall_mm_hr</code> differs. Drive the
         rain and the reservoir, HAND threshold, extent and zone shading all follow —
         the same code path that a real gauge would drive.

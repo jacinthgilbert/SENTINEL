@@ -6,3 +6,7 @@ psycopg[binary]==3.2.3
 numpy==2.5.3
 rasterio==1.5.1
 shapely==2.1.2
+# Step 9: multipart uploads (citizen photos) and image analysis
+python-multipart==0.0.20
+Pillow==12.3.0
+h3==4.5.0

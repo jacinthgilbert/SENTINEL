@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
+import nowcast
 from world import Adapter, WorldState
 
 log = logging.getLogger("sentinel.loop")
@@ -34,6 +35,14 @@ class TickLoop:
         self._task: asyncio.Task | None = None
         self.speed = float(speed)
         self.playing = True
+        self.history = nowcast.History()
+        # Warm-start at CONSTRUCTION, not only on reset. Otherwise the very
+        # first page load after starting the API shows "warming up" in the
+        # forecast panel until a reset happens — which is precisely the first
+        # thing anyone sees.
+        self.history.reset()
+        self.world_s = 0.0
+        self.on_tick = None            # set by main: the alert cycle
 
     # ── state ────────────────────────────────────────────────────────────
     @property
@@ -48,6 +57,7 @@ class TickLoop:
         """Swap the source without dropping subscribers. The map just keeps going."""
         self._adapter = adapter
         self._state = adapter.initial()
+        self.history.reset()
         if speed is not None:
             self.speed = float(speed)
         log.info("adapter -> %s (mode=%s, speed=%.1fx)",
@@ -56,6 +66,8 @@ class TickLoop:
 
     def reset(self) -> None:
         self._state = self._adapter.initial()
+        self.history.reset()
+        self.world_s = 0.0
         self._publish(self._state)
 
     # ── pub/sub ──────────────────────────────────────────────────────────
@@ -88,7 +100,18 @@ class TickLoop:
             try:
                 dt_world = self._interval_s * self.speed
                 self._state = self._adapter.step(self._state, dt_world)
+                self.history.observe(
+                    self._state.rainfall_mm_hr,
+                    next(iter(self._state.stages.values()), 0.0),
+                    dt_world,
+                )
+                self.world_s += dt_world
                 self._publish(self._state)
+                if self.on_tick is not None:
+                    try:
+                        self.on_tick(self.world_s)
+                    except Exception:
+                        log.exception("tick hook failed")
             except Exception:
                 log.exception("tick failed; holding last good state")
 

@@ -20,3 +20,6 @@ data/population.tif
 web/tsconfig.tsbuildinfo
 data/worldpop_ind.tif
 data/*.part
+# Source archive for GHS-POP — 20 MB and refetchable; population.tif is committed
+data/ghs_pop_*.zip
+data/nowcast/models.pkl

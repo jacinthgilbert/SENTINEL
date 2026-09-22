@@ -12,12 +12,17 @@ import time
 
 import config as C
 
+# Each entry may list FALLBACKS. Both primaries were unreachable while this
+# was built — OpenTopography by DNS, WorldPop by a 7 KB/s throttle and a
+# refusal to honour Range headers — and a pipeline that dies because one
+# provider is having a bad day is not a pipeline. The fallbacks produce
+# byte-compatible outputs, so nothing downstream knows which one ran.
 STAGES = [
-    ("DEM (Copernicus COP30)", "fetch_dem"),
-    ("HAND (pysheds)", "make_hand"),
-    ("Roads + facilities (OSM)", "fetch_osm"),
-    ("Population (WorldPop 100 m)", "fetch_population"),
-    ("Zones (H3 res-9)", "make_zones"),
+    ("DEM", ["fetch_dem", "fetch_dem_tiles"]),
+    ("HAND", ["make_hand"]),
+    ("Roads + facilities (OSM)", ["fetch_osm"]),
+    ("Population", ["fetch_population", "fetch_population_ghsl"]),
+    ("Zones (H3 res-9)", ["make_zones"]),
 ]
 
 
@@ -27,16 +32,23 @@ def main() -> int:
           f"W{C.BBOX['west']} E{C.BBOX['east']}\n")
 
     blocked: list[tuple[str, str]] = []
-    for label, mod_name in STAGES:
+    for label, mod_names in STAGES:
         print(f"[{label}]")
         t0 = time.time()
-        try:
-            mod = __import__(mod_name)
-            mod.run()
-            print(f"  done in {time.time() - t0:.1f}s\n")
-        except Exception as exc:                        # noqa: BLE001
-            blocked.append((label, f"{type(exc).__name__}: {exc}"))
-            print(f"  BLOCKED: {type(exc).__name__}: {str(exc)[:200]}")
+        last_err = None
+        for i, mod_name in enumerate(mod_names):
+            if i:
+                print(f"  -> falling back to {mod_name}")
+            try:
+                __import__(mod_name).run()
+                print(f"  done in {time.time() - t0:.1f}s\n")
+                last_err = None
+                break
+            except Exception as exc:                    # noqa: BLE001
+                last_err = f"{type(exc).__name__}: {exc}"
+                print(f"  {mod_name} failed: {str(exc)[:160]}")
+        if last_err:
+            blocked.append((label, last_err))
             print("  continuing — later stages degrade rather than abort\n")
 
     if "--no-load" in sys.argv:
