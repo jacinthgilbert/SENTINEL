@@ -53,10 +53,21 @@ class TwilioSMSChannel:
 
     name = "sms"
 
-    def __init__(self) -> None:
-        self.sid = os.getenv("TWILIO_ACCOUNT_SID", "").strip()
-        self.token = os.getenv("TWILIO_AUTH_TOKEN", "").strip()
-        self.frm = os.getenv("TWILIO_FROM", "").strip()
+    # Read lazily, NOT in __init__. These objects are constructed at import
+    # time, which happens before .env is loaded, so anything captured in the
+    # constructor is permanently empty — the channel then reports itself as
+    # unconfigured with a correctly filled .env sitting right there.
+    @property
+    def sid(self) -> str:
+        return os.getenv("TWILIO_ACCOUNT_SID", "").strip()
+
+    @property
+    def token(self) -> str:
+        return os.getenv("TWILIO_AUTH_TOKEN", "").strip()
+
+    @property
+    def frm(self) -> str:
+        return os.getenv("TWILIO_FROM", "").strip()
 
     @property
     def live(self) -> bool:
@@ -133,14 +144,17 @@ class TwilioWhatsAppChannel(TwilioSMSChannel):
 
     name = "whatsapp"
 
-    def __init__(self) -> None:
-        super().__init__()
-        # Twilio's shared sandbox number, unless a dedicated sender is set.
-        self.frm = os.getenv("TWILIO_WHATSAPP_FROM", "+14155238886").strip()
+    @property
+    def frm(self) -> str:
+        # Prefer a dedicated WhatsApp sender, else the account's own number,
+        # else Twilio's shared sandbox.
+        return (os.getenv("TWILIO_WHATSAPP_FROM", "").strip()
+                or os.getenv("TWILIO_FROM", "").strip()
+                or "+14155238886")
 
     @property
     def live(self) -> bool:
-        return bool(self.sid and self.token and self.frm)
+        return bool(self.sid and self.token)
 
     def send(self, to: str, body: str) -> SendResult:
         if not self.live:
@@ -194,8 +208,9 @@ class TelegramChannel:
 
     name = "telegram"
 
-    def __init__(self) -> None:
-        self.token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+    @property
+    def token(self) -> str:
+        return os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 
     @property
     def live(self) -> bool:
