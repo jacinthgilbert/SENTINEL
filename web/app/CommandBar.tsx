@@ -27,10 +27,10 @@ export default function CommandBar() {
     });
     return [
       go("/", "Overview"), go("/forecast", "Forecast"),
-      go("/risk", "Risk & exposure"), go("/evacuation", "Evacuation"),
+      go("/risk", "Risk & exposure"),
       go("/alerts", "Alerts"), go("/sms", "Send SMS"),
       go("/reports", "Citizen reports"), go("/command", "Command"),
-      go("/simulator", "Simulator"), go("/offline", "Offline"),
+      go("/offline", "Offline"),
       { id: "cloudburst", label: "Cloudburst — 140 mm/hr", group: "Scenario", hint: "C",
         run: () => post("/sim/control", { mode: "scenario", rain_mm_hr: 140 }) },
       { id: "heavy", label: "Heavy rain — 60 mm/hr", group: "Scenario",

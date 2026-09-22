@@ -8,8 +8,7 @@ import { applyTheme, getTheme, type Theme } from "@/lib/theme";
 
 type Item = { href: string; label: string; ico: string; badge?: keyof Badges };
 type Badges = {
-  escalating: number; stranded: number; alerts: number;
-  reports: number; pending: number;
+  escalating: number; alerts: number; reports: number; pending: number;
 };
 
 const GROUPS: { label: string; items: Item[] }[] = [
@@ -19,7 +18,6 @@ const GROUPS: { label: string; items: Item[] }[] = [
       { href: "/", label: "Overview", ico: "◱" },
       { href: "/forecast", label: "Forecast", ico: "◷" },
       { href: "/risk", label: "Risk & exposure", ico: "◈", badge: "escalating" },
-      { href: "/evacuation", label: "Evacuation", ico: "⤳", badge: "stranded" },
     ],
   },
   {
@@ -34,13 +32,12 @@ const GROUPS: { label: string; items: Item[] }[] = [
   {
     label: "System",
     items: [
-      { href: "/simulator", label: "Simulator", ico: "⚙" },
       { href: "/offline", label: "Offline", ico: "⊘", badge: "pending" },
     ],
   },
 ];
 
-const ZERO: Badges = { escalating: 0, stranded: 0, alerts: 0, reports: 0, pending: 0 };
+const ZERO: Badges = { escalating: 0, alerts: 0, reports: 0, pending: 0 };
 
 export default function Sidebar({
   collapsed, onToggle,
@@ -61,7 +58,6 @@ export default function Sidebar({
         setB((prev) => ({
           ...prev,
           escalating: s.risk?.zones_escalating ?? 0,
-          stranded: s.routing?.stranded ?? 0,
           alerts: s.alerts?.total ?? 0,
           reports: s.reports?.verified ?? 0,
         }));
@@ -109,9 +105,7 @@ export default function Sidebar({
                   <span className="nav-ico">{it.ico}</span>
                   <span className="nav-text">{it.label}</span>
                   {n > 0 && (
-                    <span className={`nav-badge${it.badge === "stranded" ? " danger" : ""}`}>
-                      {n > 99 ? "99+" : n}
-                    </span>
+                    <span className="nav-badge">{n > 99 ? "99+" : n}</span>
                   )}
                 </Link>
               );
