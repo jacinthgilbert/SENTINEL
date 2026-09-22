@@ -9,6 +9,25 @@ including by SMS and voice, for phones that cannot run an app.
 ## Run
 
 ```bash
+make            # list every task
+make setup      # once: create .venv, install python deps
+make prep       # fetch data, build HAND / zones / road graph
+make api        # :8000
+make web        # :3000
+```
+
+No OpenTopography key yet? `make prep-synthetic` builds everything on stand-in
+terrain so the whole stack runs; the map shows a banner until real terrain
+replaces it. Then `make fresh-terrain && make prep`.
+
+> **Do not run `./prep/setup.sh` directly.** macOS 15 tags files written by
+> sandboxed processes with `com.apple.provenance`, so `exec()` on them fails
+> with *Operation not permitted* even though the exec bit is set. `make` invokes
+> `bash <file>`, which reads the script instead, and always works.
+
+Docker (optional, for PostGIS):
+
+```bash
 docker compose up --build
 ```
 
@@ -34,7 +53,7 @@ Full plan: `../flood-mvp-plan.md`
 
 - [x] **1 — Spine.** WorldState contract, tick loop, SSE, schema, compose.
 - [x] **2 — Geo prep.** DEM → HAND, road graph, H3 zones, population.
-- [ ] 3 — Inundation: stage → polygon, map render.
+- [x] **3 — Inundation.** HAND threshold → polygon, live Leaflet map.
 - [ ] 4 — Sim console: slider, clock, speed. *(F5 digital twin)*
 - [ ] 5 — Nowcast: XGBoost quantile + SHAP. *(F1)*
 - [ ] 6 — Risk + zones + vulnerable population.
@@ -101,20 +120,46 @@ it stopped. `--no-load` builds artifacts without touching PostGIS.
 - **OSM facility coverage is uneven.** Shelter capacity is a per-type default,
   not surveyed data.
 
+## Step 3 — inundation
+
+`GET /inundation?stage_m=` thresholds the cached HAND array and polygonises it.
+31 levels (0–3 m at 10 cm) are pre-warmed at startup, so no slider position
+ever pays the cold cost: served in **8–22 ms**, 4–5 ms on a cache hit.
+
+| Endpoint | Returns |
+|---|---|
+| `/inundation?stage_m=` | flooded extent as GeoJSON |
+| `/inundation?stage_m=&geometry=false` | area only, no polygonisation |
+| `/inundation/current` | extent implied by the live gauge |
+| `/zones` | the static H3 layer |
+| `/zones/flooded?stage_m=` | per-zone flooded fraction + exposed population |
+| `/facilities` | hospitals / schools / shelters |
+
+Two design notes worth keeping:
+
+- **Zones carry a HAND decile curve, not a minimum.** A res-9 hex spans ~117 DEM
+  cells and almost every hex touches a drainage line, so a min-based rule floods
+  60% of the city at 0.5 m. The decile curve is the zone's empirical CDF, so
+  "what fraction of this zone is under water" is an interpolation — a graded
+  choropleth, computed with no raster access.
+- **The risk ramp is colour-blind-safe by construction** (`web/lib/palette.ts`),
+  blue→yellow→magenta rather than green→red, monotonic in lightness so it also
+  survives greyscale and projector washout. Water uses a separate colour so the
+  two never read as one scale.
+
 ### Blocked in the authoring sandbox — run these on your own network
 
 Two downloads could not complete where this repo was built. Both work fine on a
 normal connection; the pipeline is idempotent, so just run it again.
 
 ```bash
-export $(grep -v '^#' .env | xargs)
-python prep/run.py          # fetches DEM + population, recomputes HAND and zones
+make fresh-terrain && make prep
 ```
 
 | Stage | Why it was blocked | Expected on your machine |
 |---|---|---|
 | DEM (COP30) | `portal.opentopography.org` stopped resolving mid-session. The key itself was verified working on an earlier call. | one request, a few MB, seconds |
-| Population | WorldPop advertises `accept-ranges` but ignores `Range:` headers, so the whole 506 MB file must come down. Sandbox throughput was 35 KB/s. | minutes on a normal link |
+| Population | WorldPop advertises `accept-ranges` but ignores `Range:` headers, so the whole 506 MB file must come down. Sandbox throughput was 35 KB/s. | minutes on a normal link — `fetch_population.py` falls back to a full download and caches it as `data/worldpop_ind.tif` |
 
 Everything else — road graph, facilities, H3 zones, and the HAND algorithm
 itself — is built and verified.

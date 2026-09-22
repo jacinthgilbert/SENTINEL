@@ -16,8 +16,15 @@ from world import Adapter, Mode, WorldState
 GAUGE = "SYNTH-01"
 
 # Linear-reservoir constants (placeholder physics; real model lands in Step 5).
-_K_IN = 0.45       # cm of stage per mm/hr of rain per second
-_K_OUT = 0.012     # drainage rate, fraction of stage per second
+#
+# Calibrated so the gauge stays in a plausible band rather than exploding:
+# at a sustained 60 mm/hr the equilibrium rise is K_IN/K_OUT * 60 = 120 cm,
+# i.e. the gauge tops out near 160 cm (1.2 m above the channel datum).
+# Drainage time constant 1/K_OUT is about 170 s, so the reservoir visibly lags
+# the rain instead of tracking it instantly — which is the whole point of
+# forecasting 30-120 minutes ahead.
+_K_IN = 0.012      # cm of stage per (mm/hr) per second
+_K_OUT = 0.006     # drainage, fraction of stage above datum per second
 _BASE_STAGE = 40.0
 
 
@@ -30,7 +37,7 @@ class SyntheticAdapter:
 
     mode: Mode = "live"
 
-    def __init__(self, period_s: float = 120.0, peak_mm_hr: float = 60.0) -> None:
+    def __init__(self, period_s: float = 240.0, peak_mm_hr: float = 60.0) -> None:
         self.period_s = period_s
         self.peak_mm_hr = peak_mm_hr
 

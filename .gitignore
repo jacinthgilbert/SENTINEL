@@ -15,3 +15,8 @@ data/population.tif
 
 # Derived artifacts ARE committed (see README): hand.tif is expensive to
 # compute, and the geojson/graphml let a teammate clone and run immediately.
+
+# TS incremental build cache
+web/tsconfig.tsbuildinfo
+data/worldpop_ind.tif
+data/*.part

@@ -71,8 +71,33 @@ def _bin_raster(path, res: int, how: str):
         acc[_cell_of(y, x, res)].append(float(v))
 
     for cell, vs in acc.items():
-        out[cell] = float(sum(vs)) if how == "sum" else float(min(vs))
+        if how == "sum":
+            out[cell] = float(sum(vs))
+        elif how == "min":
+            out[cell] = float(min(vs))
+        else:                                    # "values" — keep the sample
+            out[cell] = vs
     return out
+
+
+DECILES = list(range(0, 101, 10))
+
+
+def _hand_profile(values: list[float]) -> dict:
+    """Compress a zone's HAND sample to deciles.
+
+    Why not just the minimum: a res-9 hex covers ~117 DEM cells, and any hex
+    touching a drainage line has min HAND = 0, so a min-based rule floods most
+    of the city at 0.5 m. The decile curve is the zone's empirical CDF, which
+    turns "is this zone flooded?" into "what FRACTION of it is under water at
+    this stage?" — a graded choropleth instead of a binary one, computed at
+    runtime by interpolation with no raster access.
+    """
+    arr = np.sort(np.asarray(values, dtype="float64"))
+    return {
+        "hand_deciles": [round(float(v), 2) for v in np.percentile(arr, DECILES)],
+        "cells": int(arr.size),
+    }
 
 
 def run() -> None:
@@ -85,9 +110,11 @@ def run() -> None:
     hand_min: dict[str, float] = {}
     pop_sum: dict[str, float] = {}
 
+    hand_vals: dict[str, list[float]] = {}
     if C.HAND_TIF.exists():
         print("  binning HAND into H3 cells …")
-        hand_min = _bin_raster(C.HAND_TIF, C.H3_RES, how="min")
+        hand_vals = _bin_raster(C.HAND_TIF, C.H3_RES, how="values")
+        hand_min = {k: float(min(v)) for k, v in hand_vals.items()}
     else:
         print(f"  ! {C.HAND_TIF.name} missing — hand_min_m will be null")
 
@@ -97,7 +124,7 @@ def run() -> None:
     else:
         print(f"  ! {C.POP_TIF.name} missing — population will be 0")
 
-    cells = sorted(set(hand_min) | set(pop_sum))
+    cells = sorted(set(hand_vals) | set(pop_sum))
     if not cells:
         print("  ! no raster available — falling back to bbox fill "
               "(geometry only, no attributes)")
@@ -105,14 +132,17 @@ def run() -> None:
     features = []
     for cell in cells:
         pop = int(round(pop_sum.get(cell, 0.0)))
+        props = {
+            "h3": cell,
+            "population": pop,
+            "elderly_frac": C.ELDERLY_FRAC_DEFAULT,
+            "hand_min_m": (round(hand_min[cell], 2) if cell in hand_min else None),
+        }
+        if cell in hand_vals:
+            props.update(_hand_profile(hand_vals[cell]))
         features.append({
             "type": "Feature",
-            "properties": {
-                "h3": cell,
-                "population": pop,
-                "elderly_frac": C.ELDERLY_FRAC_DEFAULT,
-                "hand_min_m": (round(hand_min[cell], 2) if cell in hand_min else None),
-            },
+            "properties": props,
             "geometry": {"type": "Polygon", "coordinates": [_boundary_lonlat(cell)]},
         })
 
@@ -121,9 +151,20 @@ def run() -> None:
     )
 
     total_pop = sum(f["properties"]["population"] for f in features)
-    with_hand = sum(1 for f in features if f["properties"]["hand_min_m"] is not None)
+    with_hand = sum(1 for f in features if f["properties"].get("hand_deciles"))
     print(f"  wrote {C.ZONES_GEOJSON.name}  {len(features)} zones  "
-          f"{with_hand} with HAND  population {total_pop:,}")
+          f"{with_hand} with HAND profile  population {total_pop:,}")
+
+    if with_hand:
+        for stage in (0.5, 1.0, 2.0, 3.0):
+            frac = []
+            for f in features:
+                d = f["properties"].get("hand_deciles")
+                if d:
+                    frac.append(float(np.interp(stage, d, np.linspace(0, 1, len(d)))))
+            heavy = sum(1 for v in frac if v > 0.5)
+            print(f"    stage {stage:>4.1f} m -> mean {100*np.mean(frac):4.1f}% of "
+                  f"each zone under water, {heavy} zones >50% flooded")
 
 
 if __name__ == "__main__":

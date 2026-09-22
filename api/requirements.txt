@@ -1,3 +1,8 @@
-fastapi==0.115.6
-uvicorn[standard]==0.34.0
+# Verified versions — see prep/requirements.txt for the rationale.
+fastapi==0.141.1
+uvicorn[standard]==0.53.0
 psycopg[binary]==3.2.3
+# Step 3: HAND thresholding at request time (plan §5 performance budget)
+numpy==2.5.3
+rasterio==1.5.1
+shapely==2.1.2

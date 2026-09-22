@@ -42,3 +42,62 @@ h1 { font-size: 24px; letter-spacing: -0.02em; margin: 0 0 4px; }
 
 footer { margin-top: 40px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 16px; }
 code { background: var(--panel); border: 1px solid var(--line); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+
+/* ── Step 3: map ───────────────────────────────────────────────────────── */
+.wrap.wide { max-width: 1100px; }
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.head .sub { margin-bottom: 16px; }
+
+.mapwrap { position: relative; margin-top: 20px; }
+.map {
+  height: 520px; border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--line); background: var(--panel);
+}
+.map-skeleton { display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.leaflet-container { background: #0e141b; }
+
+.banner {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  z-index: 500; background: #4a2c00; color: #ffd591;
+  border: 1px solid #7a4a00; border-radius: 8px;
+  padding: 6px 12px; font-size: 12px; max-width: 90%;
+}
+
+.legend {
+  position: absolute; bottom: 14px; left: 14px; z-index: 500;
+  background: rgba(19,26,34,.94); border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px 12px; font-size: 12px;
+}
+.legend-title { color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; font-size: 11px; }
+.legend-row { display: flex; align-items: center; gap: 8px; line-height: 1.7; }
+.legend-row i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+.mapstats {
+  position: absolute; top: 14px; right: 14px; z-index: 500;
+  background: rgba(19,26,34,.94); border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px 12px; font-size: 13px;
+  display: flex; flex-direction: column; gap: 4px; font-variant-numeric: tabular-nums;
+}
+.mapstats b { font-size: 16px; }
+
+.err {
+  position: absolute; bottom: 14px; right: 14px; z-index: 500;
+  background: #4a1414; color: #ffb3b3; border: 1px solid #7a2222;
+  border-radius: 8px; padding: 6px 10px; font-size: 12px; max-width: 50%;
+}
+
+@media (max-width: 720px) {
+  .map { height: 380px; }
+  .mapstats { position: static; margin-top: 10px; flex-direction: row; gap: 14px; }
+}
+
+/* Basemap unreachable: a legible backdrop instead of a black void. */
+.map-nobase .leaflet-container,
+.map-nobase { background: #16202b; }
+.map-nobase .leaflet-tile-container { display: none; }
+
+.note {
+  position: absolute; top: 10px; left: 14px; z-index: 500;
+  background: rgba(19,26,34,.94); border: 1px solid var(--line);
+  color: var(--muted); border-radius: 8px; padding: 5px 10px; font-size: 12px;
+}

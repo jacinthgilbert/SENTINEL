@@ -1,6 +1,13 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useWorldState } from "@/lib/useWorldState";
+
+// Leaflet touches window on import, so it cannot server-render.
+const MapView = dynamic(() => import("./MapView"), {
+  ssr: false,
+  loading: () => <div className="map map-skeleton">loading map…</div>,
+});
 
 const STATUS_TEXT: Record<string, string> = {
   connecting: "Connecting…",
@@ -11,32 +18,25 @@ const STATUS_TEXT: Record<string, string> = {
 
 export default function Home() {
   const { state, status, ageMs } = useWorldState();
-  const stage = state ? Object.values(state.stages)[0] : undefined;
+  const gauge = state ? Object.values(state.stages)[0] ?? null : null;
 
   return (
-    <main className="wrap">
-      <h1>The Sentinel</h1>
-      <p className="sub">Flood early-warning and response · Visakhapatnam</p>
-
-      <span className="pill">
-        <span className={`dot ${status}`} />
-        {STATUS_TEXT[status]}
-        {ageMs !== null && status !== "live" && (
-          <span style={{ color: "var(--muted)" }}>· {Math.round(ageMs / 1000)}s ago</span>
-        )}
-      </span>
+    <main className="wrap wide">
+      <header className="head">
+        <div>
+          <h1>The Sentinel</h1>
+          <p className="sub">Flood early-warning and response · Visakhapatnam</p>
+        </div>
+        <span className="pill">
+          <span className={`dot ${status}`} />
+          {STATUS_TEXT[status]}
+          {ageMs !== null && status !== "live" && (
+            <span style={{ color: "var(--muted)" }}>· {Math.round(ageMs / 1000)}s</span>
+          )}
+        </span>
+      </header>
 
       <div className="grid">
-        <div className="card">
-          <div className="label">World clock</div>
-          <div className="value" style={{ fontSize: 20 }}>
-            {state ? new Date(state.t).toLocaleTimeString() : "—"}
-          </div>
-          <div className="label" style={{ marginTop: 8 }}>
-            tick {state?.tick ?? "—"} · {state?.mode ?? "—"}
-          </div>
-        </div>
-
         <div className="card">
           <div className="label">Rainfall</div>
           <div className="value">
@@ -47,24 +47,34 @@ export default function Home() {
             <i style={{ width: `${Math.min(100, ((state?.rainfall_mm_hr ?? 0) / 60) * 100)}%` }} />
           </div>
         </div>
-
         <div className="card">
           <div className="label">Gauge stage</div>
           <div className="value">
-            {stage !== undefined ? stage.toFixed(0) : "—"}
+            {gauge !== null ? gauge.toFixed(0) : "—"}
             <span className="unit">cm</span>
           </div>
           <div className="bar">
-            <i style={{ width: `${Math.min(100, ((stage ?? 0) / 200) * 100)}%` }} />
+            <i style={{ width: `${Math.min(100, ((gauge ?? 0) / 200) * 100)}%` }} />
+          </div>
+        </div>
+        <div className="card">
+          <div className="label">World clock</div>
+          <div className="value" style={{ fontSize: 20 }}>
+            {state ? new Date(state.t).toLocaleTimeString() : "—"}
+          </div>
+          <div className="label" style={{ marginTop: 8 }}>
+            tick {state?.tick ?? "—"} · {state?.mode ?? "—"}
           </div>
         </div>
       </div>
 
+      <MapView gaugeCm={gauge} />
+
       <footer>
-        <strong>Step 1 — the spine.</strong> Synthetic adapter driving a linear reservoir.
-        Kill the API with <code>docker compose stop api</code>: this page holds its last
-        value and the pill turns amber, then grey. Restart it and the stream reconnects
-        on its own. That is the offline ladder, working from day one.
+        <strong>Step 3 — inundation.</strong> The gauge drives a HAND threshold; the
+        blue extent and the zone shading are both recomputed from it. Water is a
+        separate colour from the risk ramp so the two never read as one scale, and
+        the ramp is colour-blind-safe by design rather than as a later fix.
       </footer>
     </main>
   );

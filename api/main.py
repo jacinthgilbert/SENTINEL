@@ -12,11 +12,13 @@ import logging
 import os
 from contextlib import asynccontextmanager, suppress
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 import adapters
+import inundation
+import zones as zones_mod
 from loop import TickLoop
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
@@ -37,6 +39,8 @@ async def lifespan(app: FastAPI):
     loop = TickLoop(adapters.build(ADAPTER_NAME), interval_s=TICK_INTERVAL_S)
     loop.start()
     log.info("adapter=%s tick=%.2fs", ADAPTER_NAME, TICK_INTERVAL_S)
+    # Off the event loop so startup is not blocked by raster work.
+    await asyncio.to_thread(inundation.prewarm)
     yield
     await loop.stop()
 
@@ -108,3 +112,64 @@ async def events() -> StreamingResponse:
             "X-Accel-Buffering": "no",
         },
     )
+
+
+# ── Step 3: inundation ───────────────────────────────────────────────────
+@app.get("/inundation")
+def get_inundation(
+    stage_m: float = Query(..., ge=0.0, le=inundation.MAX_STAGE_M),
+    geometry: bool = Query(True, description="false returns stats only"),
+) -> dict:
+    """Flooded extent at a given stage. The slider hits this."""
+    try:
+        if not geometry:
+            return inundation.stats(stage_m)
+        # cache on whole cm so a slider drag replays instead of recomputing
+        return inundation.extent(int(round(stage_m * 100)))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
+
+@app.get("/inundation/current")
+def get_inundation_current() -> dict:
+    """Extent implied by the live gauge. Keeps the stage->depth physics server-side."""
+    st = loop.state
+    level_cm = next(iter(st.stages.values()), inundation.GAUGE_DATUM_CM)
+    stage_m = inundation.stage_from_gauge(level_cm)
+    try:
+        out = dict(inundation.extent(int(round(stage_m * 100))))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+    out["properties"] = {**out["properties"], "gauge_cm": round(level_cm, 1), "tick": st.tick}
+    return out
+
+
+@app.get("/zones")
+def get_zones() -> dict:
+    """Static H3 zone layer."""
+    try:
+        return zones_mod.geojson()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
+
+@app.get("/zones/flooded")
+def get_zones_flooded(
+    stage_m: float = Query(..., ge=0.0, le=inundation.MAX_STAGE_M),
+) -> dict:
+    """Per-zone flooded fraction + exposed population."""
+    try:
+        return {
+            "summary": zones_mod.summary(stage_m),
+            "zones": zones_mod.flooded_fraction(stage_m),
+        }
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
+
+@app.get("/facilities")
+def get_facilities() -> dict:
+    try:
+        return zones_mod.facilities()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None

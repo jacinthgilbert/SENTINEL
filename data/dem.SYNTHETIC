@@ -1,0 +1,2 @@
+dem.tif is SYNTHETIC terrain, not real Visakhapatnam elevation.
+Delete dem.tif, hand.tif, zones.geojson and re-run prep to replace it.

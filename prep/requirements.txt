@@ -1,11 +1,13 @@
-# Heavy geospatial stack. Runs ONCE, offline, outside the API container.
-rasterio==1.4.3
-# HAND is implemented in prep/hydrology.py (no pysheds: avoids GPL-3.0
-# and the llvmlite/numba wheel problem on some platforms).
-osmnx==2.0.1
-h3==4.2.1
-geopandas==1.0.1
-shapely==2.0.6
-numpy==1.26.4
-requests==2.32.3
+# Geo-prep stack. Runs ONCE, offline, outside the API container.
+# Versions are the ones this pipeline was actually built and verified against —
+# not aspirational pins. HAND is implemented in prep/hydrology.py rather than
+# pysheds: that avoids GPL-3.0 and the llvmlite/numba wheel problem.
+numpy==2.5.3
+rasterio==1.5.1
+shapely==2.1.2
+geopandas==1.1.4
+osmnx==2.1.1
+networkx==3.6.1
+h3==4.5.0
+requests==2.34.2
 psycopg[binary]==3.2.3
