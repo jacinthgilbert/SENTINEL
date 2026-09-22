@@ -327,3 +327,15 @@ code { background: var(--panel); border: 1px solid var(--line); padding: 1px 6px
   top: auto; bottom: 54px; left: 50%; transform: translateX(-50%);
   max-width: 78%; text-align: center;
 }
+
+/* ── Step 13: real outbound warnings ───────────────────────────────────── */
+.notifypanel .chip.on { color: #ffd591; border-color: #7a4a00; background: #2a1c00; }
+.notifyrow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+.notifyrow input, .notifyrow select {
+  background: #0e141b; border: 1px solid var(--line); color: var(--text);
+  border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 13px;
+}
+.notifyrow input { min-width: 150px; }
+.previewlist { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+.prev { margin-bottom: 10px; font-size: 13px; }
+.prev .sms-body { margin-top: 3px; }

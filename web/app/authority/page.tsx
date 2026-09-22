@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { API } from "@/lib/api";
+import NotifyPanel from "./NotifyPanel";
 
 type Row = {
   h3: string; priority: number; risk_forecast: number; severity: string | null;
@@ -137,6 +138,8 @@ export default function Authority() {
         </p>
         {plan.ranking_note && <p className="fc-foot missing">{plan.ranking_note}</p>}
       </div>
+
+      <NotifyPanel />
 
       {/* ── alerts ─────────────────────────────────────────────────── */}
       <div className="card" style={{ marginTop: 16 }}>

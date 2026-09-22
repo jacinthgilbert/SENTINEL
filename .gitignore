@@ -23,3 +23,6 @@ data/*.part
 # Source archive for GHS-POP — 20 MB and refetchable; population.tif is committed
 data/ghs_pop_*.zip
 data/nowcast/models.pkl
+
+# Personal data — phone numbers. Never commit.
+data/recipients.json

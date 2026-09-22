@@ -24,7 +24,10 @@ import inundation
 import nowcast
 import cv as cv_mod
 import dispatch as dispatch_mod
+import channels as channels_mod
 import i18n
+import notify as notify_mod
+import recipients as rec_mod
 import reports as reports_mod
 import risk as risk_mod
 import routing as routing_mod
@@ -653,3 +656,112 @@ def post_demo_reset() -> dict:
         "reports_cleared": True,
         "note": "calm start — drag rainfall or hit a preset to begin the event",
     }
+
+
+# ── Step 13: real outbound warnings (authority only) ─────────────────────
+def _worst_forecast_severity() -> str | None:
+    """Highest FORECAST severity across all zones — what arms the send."""
+    r = risk_mod.assess(
+        stage_m=_stage_now_m(),
+        rain_mm_hr=loop.state.rainfall_mm_hr,
+        forecast_stage_m=_forecast_stage_m(_alert_lead_min()),
+        reports_by_zone=reports_mod.store.by_zone(),
+    )
+    worst, best_rank = None, 0
+    for z in r["zones"]:
+        sev = z.get("severity_forecast") or z.get("severity")
+        if notify_mod.RANK.get(sev or "", 0) > best_rank:
+            best_rank, worst = notify_mod.RANK[sev], sev
+    return worst
+
+
+@app.get("/recipients")
+def get_recipients() -> dict:
+    rows = [rec_mod.masked(r) for r in rec_mod.all_recipients()]
+    return {
+        "recipients": rows,
+        "active": len(rec_mod.active()),
+        "channels": channels_mod.status(),
+    }
+
+
+@app.post("/recipients")
+def post_recipient(body: dict = Body(...)) -> dict:
+    try:
+        r = rec_mod.add(
+            name=str(body.get("name", "")),
+            phone=str(body.get("phone", "")),
+            lang=str(body.get("lang", "te")),
+            zone=body.get("zone"),
+            opted_in=bool(body.get("opted_in", False)),
+            note=str(body.get("note", "")),
+        )
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from None
+    return rec_mod.masked(r)
+
+
+@app.post("/recipients/{rid}/opt-in")
+def post_opt_in(rid: int, body: dict = Body(default={})) -> dict:
+    r = rec_mod.set_opt_in(rid, bool(body.get("opted_in", True)))
+    if not r:
+        raise HTTPException(404, "no such recipient")
+    return rec_mod.masked(r)
+
+
+@app.delete("/recipients/{rid}")
+def delete_recipient(rid: int) -> dict:
+    if not rec_mod.remove(rid):
+        raise HTTPException(404, "no such recipient")
+    return {"ok": True}
+
+
+@app.get("/notify/state")
+def get_notify_state() -> dict:
+    """Is the send armed, who would receive it, and what would it say."""
+    worst = _worst_forecast_severity()
+    sev = worst or "advisory"
+    zone = "Visakhapatnam"
+    return {
+        "armed": notify_mod.armed(worst),
+        "arm_threshold": notify_mod.ARM_AT,
+        "worst_forecast_severity": worst,
+        "lead_min": _alert_lead_min(),
+        "channels": channels_mod.status(),
+        "recipients_active": len(rec_mod.active()),
+        "preview": notify_mod.preview(sev, zone, _alert_lead_min()),
+        "exercise": loop.state.mode == "scenario",
+    }
+
+
+@app.post("/notify/send")
+def post_notify_send(body: dict = Body(default={})) -> dict:
+    """Send for real. Requires the forecast to have armed it."""
+    worst = _worst_forecast_severity()
+    if not notify_mod.armed(worst) and not body.get("force"):
+        raise HTTPException(
+            409,
+            f"not armed: worst forecast severity is {worst or 'none'}, "
+            f"need {notify_mod.ARM_AT} or higher. Raise the rainfall first.",
+        )
+    if not rec_mod.active():
+        raise HTTPException(409, "no opted-in recipients")
+
+    return notify_mod.send(
+        severity=worst or "watch",
+        zone_label=str(body.get("zone", "Visakhapatnam")),
+        lead_min=_alert_lead_min(),
+        channel=str(body.get("channel", "sms")),
+        dry_run=bool(body.get("dry_run", False)),
+    )
+
+
+@app.post("/notify/refresh")
+def post_notify_refresh() -> dict:
+    """Re-check delivery. 'accepted' is not 'delivered'."""
+    return notify_mod.refresh_delivery()
+
+
+@app.get("/notify/log")
+def get_notify_log(limit: int = Query(10, ge=1, le=50)) -> dict:
+    return {"entries": list(notify_mod.audit)[:limit]}
