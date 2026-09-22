@@ -117,12 +117,13 @@ code {
   padding: 20px 18px 16px; border-bottom: 1px solid var(--line-soft);
   white-space: nowrap;
 }
+/* No box: the owl is a transparent cut-out, so it sits straight on the
+   sidebar rather than inside a tile. */
 .brand-mark {
-  width: 30px; height: 30px; flex: 0 0 30px; border-radius: 8px;
-  background: #1B2C1A; border: 1px solid var(--line);
-  display: grid; place-items: center; overflow: hidden;
+  width: 26px; height: 32px; flex: 0 0 26px;
+  display: grid; place-items: center;
 }
-.brand-mark img { width: 22px; height: auto; display: block; }
+.brand-mark img { width: 100%; height: auto; display: block; }
 .brand-name { font-weight: 650; letter-spacing: .13em; font-size: 14px; }
 .brand-sub { font-size: 10.5px; color: var(--muted); letter-spacing: .08em; }
 .shell.collapsed .brand-text { opacity: 0; pointer-events: none; }
