@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/splash.png" alt="SENTINEL" width="820">
+</p>
+
 <h1 align="center">The Sentinel</h1>
 
 <p align="center">
@@ -32,17 +36,27 @@ anybody does. The Sentinel lives in that window.
 | **Dashboard** | Ranked response priorities, each row carrying the reason it ranks where it does |
 | **Offline** | Cached tiles, last-known risk clearly labelled as stale, reports queued in IndexedDB until the network returns |
 
-### Citizen view
+### Overview
 
 Drag the rainfall slider and the reservoir, HAND threshold, inundation extent,
 zone shading, routes and alerts all follow — the same code path a real gauge
-drives.
+drives. Every feature sits behind a collapsing sidebar, with ⌘K to jump
+anywhere or fire a scenario.
 
-<p align="center"><img src="docs/citizen.png" alt="Citizen view" width="820"></p>
+<p align="center"><img src="docs/overview.png" alt="Overview" width="820"></p>
 
-### Authority dashboard
+### Command
 
-<p align="center"><img src="docs/authority.png" alt="Authority dashboard" width="820"></p>
+Ranked response priorities, each row carrying the reason it ranks where it does.
+
+<p align="center"><img src="docs/command.png" alt="Command dashboard" width="820"></p>
+
+### Alerting
+
+One CAP 1.2 document carrying Telugu, Hindi and English, with the forecast
+attribution that produced it.
+
+<p align="center"><img src="docs/alerts.png" alt="Alerting" width="820"></p>
 
 ---
 
@@ -59,6 +73,9 @@ make web        # :3000
 
 Then `make demo` for a clean starting state, and `make check` to verify all 18
 endpoints before you present. Demo script: **[DEMO.md](DEMO.md)**.
+
+In the app: **⌘K** opens the command bar, and with no field focused **C** fires
+a cloudburst, **R** resets, **T** switches theme.
 
 No API keys are required — every data source has a keyless path.
 

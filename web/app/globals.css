@@ -275,10 +275,19 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .tbl tr.on td { background: rgba(201,128,63,.07); }
 .tbl .num { text-align: right; font-variant-numeric: tabular-nums; }
 .tbl .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
+/* Severity tags need their own colours. Reusing the fill ramp made WARNING
+   almost unreadable: the ramp's darkest rust is meant to sit UNDER a map, not
+   to be read as text on a dark ground. */
 .sevtag {
   text-transform: uppercase; font-size: 9.5px; font-weight: 700; letter-spacing: .08em;
   border: 1px solid currentColor; border-radius: 4px; padding: 2px 7px; white-space: nowrap;
 }
+.sevtag.warn3 { color: #E08A62; }
+.sevtag.warn2 { color: #E0B455; }
+.sevtag.warn1 { color: #9FB184; }
+:root[data-theme="light"] .sevtag.warn3 { color: #8A3A22; }
+:root[data-theme="light"] .sevtag.warn2 { color: #8A6522; }
+:root[data-theme="light"] .sevtag.warn1 { color: #4E6438; }
 .muted { color: var(--muted); }
 .warn { color: var(--ochre); }
 .ok { color: var(--live); }
