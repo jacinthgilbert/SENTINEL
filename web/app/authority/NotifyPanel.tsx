@@ -66,7 +66,7 @@ export default function NotifyPanel() {
 
   if (!s) return null;
   // Order matters: simulated always works, so it leads and is the safe default.
-  const order = ["simulated", "sms"];
+  const order = ["simulated", "phone", "sms"];
   const chans = order.filter((k) => s.channels?.[k]);
 
   return (

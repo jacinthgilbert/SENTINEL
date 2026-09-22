@@ -786,6 +786,17 @@ def post_notify_refresh() -> dict:
     return notify_mod.refresh_delivery()
 
 
+@app.get("/notify/probe")
+def get_notify_probe() -> dict:
+    """Is the Android phone reachable? Check this before the demo, not during."""
+    ch = channels_mod.get("phone")
+    if not hasattr(ch, "probe"):
+        return {"ok": False, "status": "n/a"}
+    r = ch.probe()
+    return {"ok": r.ok, "status": r.status, "error": r.error, "detail": r.detail,
+            "url": getattr(ch, "base", "")}
+
+
 @app.get("/notify/log")
 def get_notify_log(limit: int = Query(10, ge=1, le=50)) -> dict:
     return {"entries": list(notify_mod.audit)[:limit]}

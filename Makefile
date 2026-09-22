@@ -11,7 +11,7 @@ VENV  := .venv
 BIN   := $(VENV)/bin
 
 .DEFAULT_GOAL := help
-.PHONY: help setup prep prep-synthetic train test api web db load fresh-terrain clean stop demo check sms-test
+.PHONY: help setup prep prep-synthetic train test api web db load fresh-terrain clean stop demo check sms-test phone-test
 
 help:  ## show this help
 	@grep -hE '^[a-z-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -58,6 +58,9 @@ demo: ## reset to a known-good demo state (calm, scenario, 10x)
 
 sms-test: ## does SMS reach a handset?  make sms-test TO=+91XXXXXXXXXX [FREE=1]
 	@FREE=$(FREE) bash scripts/sms-test.sh $(TO)
+
+phone-test: ## Android SMS gateway reachable?  make phone-test [TO=+91XXXXXXXXXX]
+	@bash scripts/phone-test.sh $(TO)
 
 check: ## pre-demo smoke test: every endpoint the script touches
 	@bash scripts/check.sh

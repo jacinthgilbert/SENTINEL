@@ -138,17 +138,111 @@ class TwilioSMSChannel:
                           error=(str(code) if code else None), detail=hint)
 
 
+class AndroidGatewayChannel:
+    """Send SMS through an Android phone on the local network.
+
+    The phone runs a small HTTP server and sends through its own SIM, which is
+    why this works where Twilio does not: it is person-to-person SMS on an
+    Indian number, not bulk commercial traffic, so the TRAI DLT regime does not
+    apply. No account tier, no templates, no approval, and no per-message cost
+    beyond the phone's existing plan.
+
+    Targets the local API of capcom6/android-sms-gateway:
+
+        POST {base}/message   {"message": "...", "phoneNumbers": ["+91..."]}
+
+    Configure in .env:
+        ANDROID_SMS_URL=http://192.168.1.5:8080
+        ANDROID_SMS_USER=sms
+        ANDROID_SMS_PASS=...
+    """
+
+    name = "phone"
+
+    @property
+    def base(self) -> str:
+        return os.getenv("ANDROID_SMS_URL", "").strip().rstrip("/")
+
+    @property
+    def auth(self):
+        u = os.getenv("ANDROID_SMS_USER", "").strip()
+        p = os.getenv("ANDROID_SMS_PASS", "").strip()
+        return (u, p) if u else None
+
+    @property
+    def live(self) -> bool:
+        return bool(self.base)
+
+    def probe(self) -> SendResult:
+        """Is the phone reachable right now? Run this BEFORE the demo.
+
+        The usual failure is not the app — it is the network. Venue wifi often
+        isolates clients from each other, so the laptop cannot reach the phone
+        even though both are online.
+        """
+        if not self.live:
+            return SendResult(ok=False, status="failed",
+                              error="ANDROID_SMS_URL not set in .env")
+        import requests
+        for path in ("/health", "/message"):
+            try:
+                r = requests.get(f"{self.base}{path}", auth=self.auth, timeout=6)
+                if r.status_code < 500:
+                    return SendResult(ok=True, status="reachable",
+                                      detail=f"{self.base} answered {r.status_code} on {path}")
+            except Exception as exc:                      # noqa: BLE001
+                last = f"{type(exc).__name__}"
+        return SendResult(
+            ok=False, status="unreachable", error=last,
+            detail=("phone not reachable. Check both devices are on the same "
+                    "network, and prefer the phone's own hotspot — venue wifi "
+                    "commonly blocks device-to-device traffic."),
+        )
+
+    def send(self, to: str, body: str) -> SendResult:
+        if not self.live:
+            return SendResult(ok=False, status="failed",
+                              error="ANDROID_SMS_URL not set in .env")
+        import requests
+        try:
+            r = requests.post(f"{self.base}/message", auth=self.auth, timeout=25,
+                              json={"message": body, "phoneNumbers": [to]})
+        except Exception as exc:                          # noqa: BLE001
+            return SendResult(ok=False, status="failed",
+                              error=f"{type(exc).__name__}: {exc}",
+                              detail="phone unreachable — see the probe hint")
+        if r.status_code >= 300:
+            return SendResult(ok=False, status="failed",
+                              error=f"HTTP {r.status_code}: {r.text[:160]}")
+        try:
+            d = r.json()
+        except Exception:                                 # noqa: BLE001
+            d = {}
+        return SendResult(ok=True, status=str(d.get("state", "sent")).lower(),
+                          provider_id=d.get("id"),
+                          detail="handed to the phone's SIM")
+
+
 _SIM = SimulatedChannel()
 _SMS = TwilioSMSChannel()
+_PHONE = AndroidGatewayChannel()
 
 
 def get(name: str):
-    return {"simulated": _SIM, "sms": _SMS}.get(name, _SIM)
+    return {"simulated": _SIM, "sms": _SMS, "phone": _PHONE}.get(name, _SIM)
 
 
 def status() -> dict:
     return {
         "simulated": {"live": True, "note": "on-screen handset, always available"},
+        "phone": {
+            "live": _PHONE.live,
+            "note": (f"Android gateway at {_PHONE.base}" if _PHONE.live else
+                     "set ANDROID_SMS_URL in .env (SMS Gateway app, local server mode)"),
+            "warning": ("Both devices must be on the same network. Venue wifi often "
+                        "isolates clients — use the phone's hotspot and connect the "
+                        "laptop to it."),
+        },
         "sms": {
             "live": _SMS.live,
             "note": ("ready" if _SMS.live else
