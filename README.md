@@ -1,13 +1,106 @@
-# The Sentinel
+<h1 align="center">The Sentinel</h1>
 
-Flood early-warning and response platform — **Visakhapatnam**.
+<p align="center">
+  <strong>Flood early-warning and response for Visakhapatnam</strong><br>
+  Forecasts water levels 30–120 minutes ahead with calibrated uncertainty,
+  routes evacuations around flooded roads,<br>and alerts in Telugu, Hindi and English —
+  including with the network switched off.
+</p>
 
-Predicts flooding 30–120 minutes ahead, shows zone-level risk on a live map,
-routes people around flooded roads, and alerts them in their own language —
-including by SMS and voice, for phones that cannot run an app.
+<p align="center">
+  <img alt="MIT licence" src="https://img.shields.io/badge/code-MIT-blue">
+  <img alt="Data ODbL + CC BY" src="https://img.shields.io/badge/data-ODbL%20%2B%20CC%20BY-orange">
+  <img alt="Python 3.12" src="https://img.shields.io/badge/python-3.12-3776ab">
+  <img alt="Next.js 14" src="https://img.shields.io/badge/next.js-14-black">
+</p>
 
-**Demo runbook: [DEMO.md](DEMO.md)** — the six-minute script, timed against
-this build, with the failure table.
+---
+
+## What it does
+
+Rain falls. A gauge rises. Between those two events there is a gap of an hour
+or so — and that gap is the only window in which a warning can change what
+anybody does. The Sentinel lives in that window.
+
+| | |
+|---|---|
+| **Nowcast** | Water level at +30/60/90/120 min as a calibrated 80% interval, with exact Shapley attributions for every number |
+| **Risk map** | 696 H3 zones scored on flood extent, depth, rainfall and citizen reports — shown *now* and *in 60 minutes* |
+| **Routing** | Evacuation routes that avoid flooded roads, degrade to "risky" rather than failing, and report zones no road reaches |
+| **Alerting** | CAP 1.2 documents carrying Telugu, Hindi and English in one message, with `status=Exercise` in drills |
+| **Crowdsourcing** | Citizen reports scored for trust — a lone report is ignored, three independent ones move the map |
+| **Dashboard** | Ranked response priorities, each row carrying the reason it ranks where it does |
+| **Offline** | Cached tiles, last-known risk clearly labelled as stale, reports queued in IndexedDB until the network returns |
+
+### Citizen view
+
+Drag the rainfall slider and the reservoir, HAND threshold, inundation extent,
+zone shading, routes and alerts all follow — the same code path a real gauge
+drives.
+
+<p align="center"><img src="docs/citizen.png" alt="Citizen view" width="820"></p>
+
+### Authority dashboard
+
+<p align="center"><img src="docs/authority.png" alt="Authority dashboard" width="820"></p>
+
+---
+
+## Quickstart
+
+```bash
+git clone <your-repo-url> && cd the-sentinel
+make setup      # venv + python deps
+make prep       # DEM, HAND, road graph, zones, population
+make train      # nowcast models (~2 min)
+make api        # :8000
+make web        # :3000
+```
+
+Then `make demo` for a clean starting state, and `make check` to verify all 18
+endpoints before you present. Demo script: **[DEMO.md](DEMO.md)**.
+
+No API keys are required — every data source has a keyless path.
+
+---
+
+## How honest is it?
+
+Every claim below is measured, not asserted. The numbers come from a held-out
+evaluation in `data/nowcast/report.json`.
+
+- **Nowcast skill is 17% over persistence overall, ~30% on storm days.** The
+  headline is dragged down by operator step changes, which no forecast can
+  anticipate and real rainfall never does.
+- **The 80% band covers 81%**, calibrated on a validation split and verified on
+  test. It read 90% before calibration; a band that misstates its own
+  confidence is worse than no band.
+- **The vision model is a heuristic, not a trained network** (`"trained": false`
+  in every response). A FloodNet fine-tune is the intended replacement.
+- **Trained on synthetic storms** driven by the same reservoir the simulator
+  uses, with observation and forecast noise, held out by whole sequence —
+  because sub-hourly Indian gauge data is not public. The architecture
+  transfers; the weights need local calibration.
+- **Shelter capacity is an OSM per-type default**, not surveyed data.
+- **Alert translations have not been reviewed** by a native speaker.
+
+---
+
+## Licence
+
+Code is **MIT** (`LICENSE`). The data under `data/` is **not** — it derives
+from OpenStreetMap (ODbL, share-alike) and GHS-POP (CC BY 4.0). See
+**[DATA_LICENSES.md](DATA_LICENSES.md)** before publishing anything built from it.
+
+> Map data © OpenStreetMap contributors, ODbL. Population: GHS-POP R2023A,
+> European Commission JRC, CC BY 4.0. Elevation: AWS Terrain Tiles.
+
+---
+
+# Build log
+
+What follows is the record of how this was built, step by step, including the
+bugs. Kept deliberately: most of them are only visible once the thing runs.
 
 ## Run
 
